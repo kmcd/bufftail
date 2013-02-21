@@ -1,10 +1,20 @@
+#!/usr/bin/env ruby
+unless signals = ARGV.first
+  puts "USAGE: ./paper_trade.rb ED_RT_CTL"
+  exit
+end
+
 require 'csv'
+puts "Fetching sftp://kmcd@10.211.55.3:/tmp/#{signals}.csv into ./signals/"
+`echo "get /cygdrive/c/tmp/#{signals}.csv signals" | sftp -b - kmcd@10.211.55.3`
+signal = CSV.read("./signals/#{signals}.csv", headers:true).first
+exit '= No signals' unless signal
+
 require 'ib-ruby'
 require 'active_support/all'
 
 ib = IB::Connection.new :client_id => 1112, :port => 4001
 ib.subscribe(:Alert, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }
-
 
 def expiry_for(ticker)
   month_code = ticker[/\w\d+$/][/\w/]
@@ -29,64 +39,45 @@ def contract_for(ticker)
   return contract
 end
 
-def order(args={})
+def buy_order(args={})
+  IB::Order.new({total_quantity:1, action:'BUY', order_type:'LMT', transmit:false,
+    tif:'GTC'}.merge!(args))
 end
 
-raise RuntimeError unless $file
-exit unless signal = CSV.read($file, headers:true).first
+def sell_order(args={})
+  buy_order args.merge!({ action:'SELL'})
+end
 
-order_ref = "basket_#{rand(9999)}" # from filename, eg ED_RT_CTL
+def place_order(ib, order, contract, parent=nil)
+  order.parent_id = parent.local_id if parent
+  ib.place_order order, contract
+end
+
+oca_group = [ signals,  DateTime.now.to_s(:db).gsub(/\D/, '') ].join '_'
+order_ref = signals
 contract = contract_for signal['Ticker']
 ib.wait_for :NextValidId
 
-#-- Parent Order --
-buy_order = IB::Order.new :total_quantity => 1,
-  :limit_price => signal['entry price'],
-  :action => 'BUY',
-  :order_type => 'LMT',
-  :transmit => false,
-  :tif => 'GTC',
-  :outside_rth => true
+entry_order = buy_order limit_price:signal['entry price'], transmit:false,
+  order_ref:order_ref
+
+stop_order = sell_order limit_price:signal['stop loss'], 
+  aux_price:signal['stop loss'], order_type:'STP', 
+  oca_group:oca_group, order_ref:order_ref
   
-#-- Child STOP --
-stop_order = IB::Order.new :total_quantity => 1,
-  :limit_price => signal['stop loss'],
-  :aux_price => signal['stop loss'],
-  :action => 'SELL',
-  :order_type => 'STP',
-  :parent_id => buy_order.local_id,
-  :transmit => true,
-  :tif => 'GTC', 
-  :oca_group => order_ref
-  
-#-- Profit LMT
-profit_order = IB::Order.new :total_quantity => 1,
-  :limit_price => signal['exit price'],
-  :action => 'SELL',
-  :order_type => 'LMT',
-  :transmit => true,
-  :outside_rth => true,
-  :tif => 'GTC',
-  :parent_id => buy_order.local_id,
-  :oca_group => order_ref
+profit_order = sell_order :total_quantity => 1, limit_price:signal['exit price'],
+  oca_group:oca_group, order_ref:order_ref
 
-#-- Expiry
-expire_on = (1.day.from_now.end_of_day - 4.hours).to_s
-expire_on.gsub! /-/, ''
-expire_on.gsub! /\+\d+$/, 'UTC'
+# 30 mins before CME GLOBEX close (will need to alter for LIFFE)
+expire_on = [1.day.from_now.to_date.to_s.gsub(/\D/,''), "15:30:00 CST"].join ' '
+expiry_order = sell_order order_type:'MKT', good_after_time:expire_on, 
+  order_ref:order_ref, oca_group:oca_group, transmit:true # last in bracket order
 
-expiry_order = IB::Order.new :total_quantity => 1,
-  :action => 'SELL',
-  :order_type => 'MKT',
-  :parent_id => buy_order.local_id,
-  :transmit => true,
-  :outside_rth => true,
-  :good_after_time => expire_on,
-  :tif => 'GTC',
-  :oca_group => order_ref
+place_order ib, entry_order, contract
+place_order ib, stop_order, contract, entry_order
+place_order ib, profit_order, contract, entry_order
+place_order ib, expiry_order, contract, entry_order
 
-# place parent order
-ib.place_order buy_order, contract
-ib.place_order stop_order, contract
-ib.place_order profit_order, contract
-ib.place_order expiry_order, contract
+ib.send_message :RequestAllOpenOrders
+puts "\n******** Press <Enter> to cancel... *********\n\n"
+STDIN.gets
