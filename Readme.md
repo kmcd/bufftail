@@ -1,0 +1,1 @@
+![Bufftail hawkmoth](http://www.avianweb.com/images/birds/BufftailedCoronet3.jpg)
