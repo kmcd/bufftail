@@ -1,9 +1,21 @@
+#!ruby
+# N.B. Ensure Amibroker is running
+
+unless signal = ARGV.first
+  puts "USAGE: ./signal_scan.rb ED_RT_CTL"
+  puts "Must be one of:"
+  puts Dir["/cygdrive/c/Program\ Files/Amibroker/Formulas/Signals/*.apx"].
+    map {|_| File.basename(_).gsub /\.apx/, '' }.sort
+  exit
+end
+
 require 'win32ole'
 @amibroker = WIN32OLE.new 'Broker.Application'
 @amibroker.LoadDatabase "C:\\\\Program\ Files\\Amibroker\\IQ_eod"
 
-def export_signals(filename)
-  puts "= Signal scan  #{filename}"
+def export_signals(basename)
+  filename = "C:\\\\Program\ Files\\Amibroker\\Formulas\\Signals\\#{basename}.apx"
+  puts "= Signal scan  #{basename}"
   wfa = @amibroker.AnalysisDocs.Open filename
   wfa.Run 1
   sleep 1 while wfa.IsBusy
@@ -11,19 +23,7 @@ def export_signals(filename)
   export_file = File.basename(filename).gsub /apx/, 'csv'
   wfa.export "C:\\\\tmp\\#{export_file}"
   puts "= Exported     C:\\\\tmp\\#{export_file}"
-  
   wfa.Close
 end
 
-strategy_file_names = %w[ 
-ED_RT_CTL
-EI_RT_CTL
-EI_RTL
-SS_RT_CTL
-SS_RTL
-SS_RTS
-]
-
-strategy_file_names.each do |_|
-  export_signals "C:\\\\Program\ Files\\Amibroker\\Formulas\\Signals\\#{_}.apx"
-end
+export_signals signal
