@@ -13,7 +13,9 @@ exit '= No signals' unless signal
 require 'ib-ruby'
 require 'active_support/all'
 
-ib = IB::Connection.new :client_id => 1112, :port => 4001
+client_id = lambda {|_| _.hash.abs.to_s[0...4].to_i }
+  
+ib = IB::Connection.new :client_id => client_id[signals], :port => 4001
 ib.subscribe(:Alert, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }
 
 def expiry_for(ticker)
