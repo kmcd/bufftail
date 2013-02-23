@@ -5,9 +5,9 @@ unless signals = ARGV.first
 end
 
 require 'csv'
-puts "Fetching sftp://kmcd@10.211.55.3:/tmp/#{signals}.csv into ./signals/"
-`echo "get /cygdrive/c/tmp/#{signals}.csv signals" | sftp -b - kmcd@10.211.55.3`
-signal = CSV.read("./signals/#{signals}.csv", headers:true).first
+puts "Fetching sftp://kmcd@10.211.55.3:/tmp/#{signals}.csv into ./tmp/"
+`echo "get /cygdrive/c/tmp/#{signals}.csv tmp" | sftp -b - kmcd@10.211.55.3`
+signal = CSV.read("./tmp/#{signals}.csv", headers:true).first
 exit '= No signals' unless signal
 
 require 'ib-ruby'
