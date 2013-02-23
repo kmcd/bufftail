@@ -46,8 +46,8 @@ g.data 'Rolling mean', rolling_mean, 'black'
 g.data 'Rolling stdev', rolling_stdev, 'lightblue'
 
 g.data 'Mean', [benchmark_mean] * trades.size, 'green'
-g.data 'Zero', [0] * trades.size, 'pink'
-g.data 'Stdev -1', [-benchmark_stdev] * trades.size, 'orange'
+g.data 'Zero', [0] * trades.size, 'orange'
+g.data 'Stdev -1', [-benchmark_stdev] * trades.size, 'pink'
 g.data 'Stdev +2', [-benchmark_stdev*2] * trades.size, 'red'
 
 g.write "./tmp/#{strategy.downcase}.png"
