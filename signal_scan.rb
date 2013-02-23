@@ -1,4 +1,4 @@
-#!ruby
+#!/usr/bin/env ruby
 # N.B. Ensure Amibroker is running
 
 unless signal = ARGV.first
