@@ -30,23 +30,24 @@ rolling_stdev = trades.each_with_index.map do |t,i|
   trades[i-roll..i].to_scale.sd
 end[1..-1].unshift 0
 
-ratio = rolling_mean.each_with_index.map do |mean,i|
-  next if rolling_mean[i] == 0 || rolling_stdev[i] == 0
-  rolling_mean[i].to_f / rolling_stdev[i].to_f
-end.flatten.unshift 0
+current_mean = rolling_mean.last.round 2
+current_sd = rolling_stdev.last.round 2
+current_ratio  = (rolling_mean.last / rolling_stdev.last).round 2
 
 g = Gruff::Line.new
 g.theme = { font_color:'black', background_colors:'white' }
-g.title = strategy
+g.title = strategy + " m:#{current_mean}, s:#{current_sd}, r:#{current_ratio}"
 g.hide_legend = true
 g.line_width = 2
 g.dot_radius = 0
 
-g.data 'Trades', trades, 'grey'
+g.data 'Trades', trades, 'lightgrey'
 g.data 'Rolling mean', rolling_mean, 'black'
+g.data 'Rolling stdev', rolling_stdev, 'lightblue'
+
 g.data 'Mean', [benchmark_mean] * trades.size, 'green'
-g.data 'Zero', [0] * trades.size, 'blue'
-g.data 'Stdev -1', [-benchmark_stdev] * trades.size, 'pink'
+g.data 'Zero', [0] * trades.size, 'pink'
+g.data 'Stdev -1', [-benchmark_stdev] * trades.size, 'orange'
 g.data 'Stdev +2', [-benchmark_stdev*2] * trades.size, 'red'
 
 g.write "./tmp/#{strategy.downcase}.png"
