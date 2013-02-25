@@ -81,5 +81,3 @@ place_order ib, profit_order, contract, entry_order
 place_order ib, expiry_order, contract, entry_order
 
 ib.send_message :RequestAllOpenOrders
-puts "\n******** Press <Enter> to cancel... *********\n\n"
-STDIN.gets
