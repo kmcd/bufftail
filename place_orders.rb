@@ -51,7 +51,7 @@ end
 def contract_for(ticker)
   contract = case ticker
     when /ED/; IB::Symbols::Futures.future 'GE', 'GLOBEX', 'USD'
-    when /EI/; IB::Symbols::Futures.future 'I', 'LIFFE', 'EUR'
+    when /IE/; IB::Symbols::Futures.future 'I', 'LIFFE', 'EUR'
     when /LL/; IB::Symbols::Futures.future 'L', 'LIFFE', 'GBP'
   end
   contract.sec_type = 'FUT'
