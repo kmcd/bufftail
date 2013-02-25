@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+require 'erb'
+
+template = ERB.new DATA.read
+File.open('./tmp/control_charts.html', 'w') {|_| _.puts template.result binding }
+
+__END__
+
+<html>
+<head>
+  <style type="text/css">
+    body { margin: auto 15% ;  }
+    img { margin-top: 10% }
+  </style>
+<head>
+<body>
+  <% Dir['./tmp/*.png'].each do |control_chart|%>
+    <img src="<%= File.basename control_chart %>"/>
+  <% end %>
+</body>

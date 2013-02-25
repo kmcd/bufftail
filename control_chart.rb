@@ -34,7 +34,7 @@ current_mean = rolling_mean.last.round 2
 current_sd = rolling_stdev.last.round 2
 current_ratio  = (rolling_mean.last / rolling_stdev.last).round 2
 
-g = Gruff::Line.new
+g = Gruff::Line.new trades.size * 10
 g.theme = { font_color:'black', background_colors:'white' }
 g.title = strategy + " m:#{current_mean}, s:#{current_sd}, r:#{current_ratio}"
 g.hide_legend = true
