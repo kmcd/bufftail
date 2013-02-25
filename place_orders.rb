@@ -5,8 +5,7 @@ unless signals = ARGV.first
 end
 
 require 'csv'
-puts "Fetching sftp://kmcd@10.211.55.3:/tmp/#{signals}.csv into ./tmp/"
-`echo "get /cygdrive/c/tmp/#{signals}.csv tmp" | sftp -b - kmcd@10.211.55.3`
+`scp kmcd@10.211.55.3:/cygdrive/c/tmp/#{signals}.csv tmp`
 signal = CSV.read("./tmp/#{signals}.csv", headers:true).first
 exit '= No signals' unless signal
 
