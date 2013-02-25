@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 unless signals = ARGV.first
-  puts "USAGE: ./paper_trade.rb ED_RT_CTL"
+  puts "USAGE: ./place_orders.rb ED_RT_CTL [optional fixed fraction] 0.05"
   exit
 end
 
@@ -12,10 +12,29 @@ exit '= No signals' unless signal
 
 require 'ib-ruby'
 require 'active_support/all'
-
 client_id = lambda {|_| _.hash.abs.to_s[0...4].to_i }
-  
 ib = IB::Connection.new :client_id => client_id[signals], :port => 4001
+
+@account_balance = 10_000
+ib.subscribe :AccountValue do |msg|
+  account_info = msg.data
+  if account_info[:key] == 'TotalCashBalance' && account_info[:currency] == 'BASE'
+    @account_balance = account_info[:value].to_i
+    account_balance = account_info[:value]
+  end
+end
+ib.send_message :RequestAccountData, subscribe:true
+sleep 1
+ib.send_message :RequestAccountData, subscribe:false
+
+@position_size = if ARGV.size == 2
+  position_risk = signal['stop loss $'].to_f
+  account_risk = ARGV.last.to_f
+  ((account_risk * @account_balance) / position_risk).round
+else
+  1
+end
+
 ib.subscribe(:Alert, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }
 
 def expiry_for(ticker)
@@ -42,8 +61,8 @@ def contract_for(ticker)
 end
 
 def buy_order(args={})
-  IB::Order.new({total_quantity:1, action:'BUY', order_type:'LMT', transmit:false,
-    tif:'GTC'}.merge!(args))
+  IB::Order.new({total_quantity:@position_size, action:'BUY', order_type:'LMT', 
+    transmit:false, tif:'GTC'}.merge!(args))
 end
 
 def sell_order(args={})
@@ -67,8 +86,8 @@ stop_order = sell_order limit_price:signal['stop loss'],
   aux_price:signal['stop loss'], order_type:'STP', 
   oca_group:oca_group, order_ref:order_ref
   
-profit_order = sell_order :total_quantity => 1, limit_price:signal['exit price'],
-  oca_group:oca_group, order_ref:order_ref
+profit_order = sell_order limit_price:signal['exit price'], oca_group:oca_group, 
+  order_ref:order_ref
 
 # 30 mins before CME GLOBEX close (will need to alter for LIFFE)
 expire_on = [1.day.from_now.to_date.to_s.gsub(/\D/,''), "15:30:00 CST"].join ' '
