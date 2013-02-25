@@ -13,9 +13,11 @@ trades = CSV.read("./tmp/trades.csv", headers:true).
   map &:to_f
 
 require 'statsample'
-require 'gruff'
-
-benchmark_mean, benchmark_stdev = 17.06, 41.50
+benchmark = {
+  ED_RT_CTL:{mean:17.06, stdev:41.50}
+}
+benchmark_mean = benchmark[strategy.to_sym][:mean]
+benchmark_stdev = benchmark[strategy.to_sym][:stdev]
 
 rolling_mean = trades.each_with_index.map do |t,i| 
   roll = i < 10 ? i : 10 
@@ -32,6 +34,7 @@ current_sd = rolling_stdev.last.round 2
 current_ratio = current_sd == 0.0 ? 0 : (rolling_mean.last / rolling_stdev.last).
   round(2)
 
+require 'gruff'
 g = Gruff::Line.new '600x400'
 g.theme = { font_color:'black', background_colors:'white' }
 g.title = strategy + " t:#{trades.size} m:#{current_mean}, s:#{current_sd}, r:#{current_ratio}"
