@@ -4,10 +4,15 @@ unless signals = ARGV.first
   exit
 end
 
+def valid?(signal)
+  Date.parse([signal['Date/Time'].gsub(/(\d+)\/(\d+)/, "#{$2}/#{$1}")) == Date.today
+end
+
 require 'csv'
 `scp kmcd@10.211.55.3:/cygdrive/c/tmp/#{signals}.csv tmp`
 signal = CSV.read("./tmp/#{signals}.csv", headers:true).first
 exit '= No signals' unless signal
+exit '= Signal out of date' unless valid?(signal)
 
 require 'ib-ruby'
 require 'active_support/all'
