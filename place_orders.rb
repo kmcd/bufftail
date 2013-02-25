@@ -89,12 +89,12 @@ profit_order = sell_order limit_price:signal['exit price'], oca_group:oca_group,
   order_ref:order_ref
 
 # 15 mins before market close
-market_close = case ticker
+market_close = case signal['Ticker']
   when /ED/; '21:45:00 GMT'
   when /IE/; '20:45:00 GMT'
   when /LL/; '17:15:00 GMT'
 end
-expire_on = [1.day.from_now.to_date.to_s.gsub(/\D/,market_close), ].join ' '
+expire_on = [1.day.from_now.to_date.to_s.gsub(/\D/,''), market_close].join ' '
 expiry_order = sell_order order_type:'MKT', good_after_time:expire_on, 
   order_ref:order_ref, oca_group:oca_group, transmit:true # last in bracket order
 
