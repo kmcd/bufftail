@@ -7,17 +7,18 @@ unless strategy = ARGV.first
 end
 
 require 'csv'
-trades = CSV.read("./tmp/trades.csv", headers:true).
+paper_trades = CSV.read("./tmp/trades.csv", headers:true).
   find_all {|_| _['Order Ref.'] == strategy }.
   map {|_| _['Realized P&L'] }.compact.
   map &:to_f
 
+require 'yaml'
+wfa_trades = YAML.load_file('wfa_trades.yml')[strategy]
+trades = [ wfa_trades, paper_trades ].flatten
+  
 require 'statsample'
-benchmark = {
-  ED_RT_CTL:{mean:17.06, stdev:41.50}
-}
-benchmark_mean = benchmark[strategy.to_sym][:mean]
-benchmark_stdev = benchmark[strategy.to_sym][:stdev]
+benchmark_mean = wfa_trades.to_scale.mean
+benchmark_stdev = wfa_trades.to_scale.sd
 
 rolling_mean = trades.each_with_index.map do |t,i| 
   roll = i < 10 ? i : 10 
