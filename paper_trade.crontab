@@ -1,0 +1,3 @@
+50 21 * * * 1-5 * cd /Users/kmcd/src/bufftail && ruby place_orders.rb ED_RT_CTL
+50 20 * * * 1-5 * cd /Users/kmcd/src/bufftail && ruby place_orders.rb EI_RTL
+50 20 * * * 1-5 * cd /Users/kmcd/src/bufftail && ruby place_orders.rb EI_RT_CTL

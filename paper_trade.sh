@@ -1,1 +1,0 @@
-ruby place_orders.rb ED_RT_CTL
