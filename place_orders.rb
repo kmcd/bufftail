@@ -5,7 +5,7 @@ unless signals = ARGV.first
 end
 
 def valid?(signal)
-  Date.parse([signal['Date/Time'].gsub(/(\d+)\/(\d+)/, "#{$2}/#{$1}")) == Date.today
+  Date.parse(signal['Date/Time'].gsub(/(\d+)\/(\d+)/, "#{$2}/#{$1}")) == Date.today
 end
 
 require 'csv'
