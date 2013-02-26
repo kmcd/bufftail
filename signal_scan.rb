@@ -10,7 +10,6 @@ end
 
 require 'win32ole'
 @amibroker = WIN32OLE.new 'Broker.Application'
-@amibroker.LoadDatabase "C:\\\\Program\ Files\\Amibroker\\IQ_eod"
 
 def export_signals(basename)
   filename = "C:\\\\Program\ Files\\Amibroker\\Formulas\\Signals\\#{basename}.apx"
