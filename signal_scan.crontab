@@ -1,14 +1,14 @@
 # Signal scan
 # GLOBEX
-49 21 * * * 1-5 * /cygdrive/c/tmp/backfill.rb
-50 21 * * * 1-5 * /cygdrive/c/tmp/signal_scan.rb ED_RT_CTL
-49 20 * * * 1-5 * /cygdrive/c/tmp/backfill.rb
+49 21 * * 1-5 * /cygdrive/c/tmp/backfill.rb
+50 21 * * 1-5 * /cygdrive/c/tmp/signal_scan.rb ED_RT_CTL
 
 # EUREX
-50 20 * * * 1-5 * /cygdrive/c/tmp/signal_scan.rb EI_RTL
-50 20 * * * 1-5 * /cygdrive/c/tmp/signal_scan.rb EI_RT_CTL
+49 20 * * 1-5 * /cygdrive/c/tmp/backfill.rb
+50 20 * * 1-5 * /cygdrive/c/tmp/signal_scan.rb EI_RTL
+50 20 * * 1-5 * /cygdrive/c/tmp/signal_scan.rb EI_RT_CTL
 
 # LIFFE
-49 17 * * * 1-5 * /cygdrive/c/tmp/backfill.rb
-50 17 * * * 1-5 * /cygdrive/c/tmp/signal_scan.rb SS_RTL
-50 17 * * * 1-5 * /cygdrive/c/tmp/signal_scan.rb SS_RT_CTL
+49 17 * * 1-5 * /cygdrive/c/tmp/backfill.rb
+50 17 * * 1-5 * /cygdrive/c/tmp/signal_scan.rb SS_RTL
+50 17 * * 1-5 * /cygdrive/c/tmp/signal_scan.rb SS_RT_CTL

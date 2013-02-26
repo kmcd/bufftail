@@ -1,6 +1,6 @@
 # Paper trade
-51 21 * * * 1-5 * cd /Users/kmcd/src/bufftail && ruby place_orders.rb ED_RT_CTL
-51 20 * * * 1-5 * cd /Users/kmcd/src/bufftail && ruby place_orders.rb EI_RTL
-51 20 * * * 1-5 * cd /Users/kmcd/src/bufftail && ruby place_orders.rb EI_RT_CTL
-51 17 * * * 1-5 * cd /Users/kmcd/src/bufftail && ruby place_orders.rb SS_RTL
-51 17 * * * 1-5 * cd /Users/kmcd/src/bufftail && ruby place_orders.rb SS_RT_CTL
+51 21 * * 1-5 * cd /Users/kmcd/src/bufftail && ruby place_orders.rb ED_RT_CTL
+51 20 * * 1-5 * cd /Users/kmcd/src/bufftail && ruby place_orders.rb EI_RTL
+51 20 * * 1-5 * cd /Users/kmcd/src/bufftail && ruby place_orders.rb EI_RT_CTL
+51 17 * * 1-5 * cd /Users/kmcd/src/bufftail && ruby place_orders.rb SS_RTL
+51 17 * * 1-5 * cd /Users/kmcd/src/bufftail && ruby place_orders.rb SS_RT_CTL

@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 require 'win32ole'
 amibroker = WIN32OLE.new 'Broker.Application'
 amibroker.LoadDatabase "C:\\\\Program\ Files\\Amibroker\\IQ_eod"
