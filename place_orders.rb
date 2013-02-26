@@ -5,7 +5,8 @@ unless signals = ARGV.first
 end
 
 def valid?(signal)
-  Date.parse(signal['Date/Time'].gsub(/(\d+)\/(\d+)/, "#{$2}/#{$1}")) == Date.today
+  signal_date = Date.parse(signal['Date/Time'].gsub(/(\d+)\/(\d+)/, "\\2/\\1"))
+  signal_date == Date.today
 end
 
 require 'csv'
@@ -97,7 +98,7 @@ profit_order = sell_order limit_price:signal['exit price'], oca_group:oca_group,
 market_close = case signal['Ticker']
   when /ED/; '21:45:00 GMT'
   when /IE/; '20:45:00 GMT'
-  when /LL/; '17:15:00 GMT'
+  when /LL/; '17:30:00 GMT'
 end
 expire_on = [1.day.from_now.to_date.to_s.gsub(/\D/,''), market_close].join ' '
 expiry_order = sell_order order_type:'MKT', good_after_time:expire_on, 
