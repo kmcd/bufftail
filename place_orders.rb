@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-unless signals = ARGV.first
+if ARGV.empty?
   puts "USAGE: ./place_orders.rb ED_RT_CTL [optional fixed fraction] 0.05"
   exit
 end

@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # N.B. Ensure Amibroker is running
-unless signal = ARGV.first
-  puts "USAGE: ./signal_scan.rb ED_RT_CTL"
+if ARGV.empty?
+  puts "USAGE: ./signal_scan.rb ED_RT_CTL [optional strat 2] ..."
   puts "Must be one of:"
   puts Dir["/cygdrive/c/Program\ Files/Amibroker/Formulas/Signals/*.apx"].
     map {|_| File.basename(_).gsub /\.apx/, '' }.sort
@@ -24,4 +24,4 @@ def export_signals(basename)
   wfa.Close
 end
 
-export_signals signal
+[ARGV].flatten.each {|signal| export_signals signal }
