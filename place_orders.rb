@@ -10,15 +10,16 @@ def valid?(signal)
 end
 
 require 'csv'
-`scp kmcd@10.211.55.3:/cygdrive/c/tmp/#{signals}.csv tmp`
-signal = CSV.read("./tmp/#{signals}.csv", headers:true).first
-exit '= No signals' unless signal
-exit '= Signal out of date' unless valid?(signal)
+strategy = ARGV.first
+`scp kmcd@10.211.55.3:/cygdrive/c/tmp/#{strategy}.csv tmp`
+signal = CSV.read("./tmp/#{strategy}.csv", headers:true).first
+exit unless signal
+puts '= Signal out of date' && exit unless valid?(signal)
 
 require 'ib-ruby'
 require 'active_support/all'
 client_id = lambda {|_| _.hash.abs.to_s[0...4].to_i }
-ib = IB::Connection.new :client_id => client_id[signals], :port => 4001
+ib = IB::Connection.new :client_id => client_id[strategy], :port => 4001
 
 @account_balance = 10_000
 ib.subscribe :AccountValue do |msg|
@@ -79,8 +80,8 @@ def place_order(ib, order, contract, parent=nil)
   ib.place_order order, contract
 end
 
-oca_group = [ signals,  DateTime.now.to_s(:db).gsub(/\D/, '') ].join '_'
-order_ref = signals
+oca_group = [ strategy,  DateTime.now.to_s(:db).gsub(/\D/, '') ].join '_'
+order_ref = strategy
 contract = contract_for signal['Ticker']
 ib.wait_for :NextValidId
 
