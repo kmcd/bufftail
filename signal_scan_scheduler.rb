@@ -9,9 +9,7 @@ TEN_MINS_BEFORE_CLOSE = {
 }
 
 def signal_scan(exchange, strategies)
-  TEN_MINS_BEFORE_CLOSE[exchange]
-  
-  @scheduler.cron '34 17 * * 1-5 Europe/London' do
+  @scheduler.cron TEN_MINS_BEFORE_CLOSE[exchange] do
     load 'backfill.rb'
     strategies.each {|_| ARGV << _ }
     load 'signal_scan.rb'
