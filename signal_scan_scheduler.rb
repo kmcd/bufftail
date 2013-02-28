@@ -20,8 +20,8 @@ def signal_scan(exchange, strategies)
 end
 
 signal_scan :liffe, %w[ SS_RTL SS_RT_CTL ]
-# signal_scan :eurex, %w[ EI_RTL EI_RT_CTL SB_RT_CTS ]
-# signal_scan :globex, %w[ ED_RT_CTL ED_ZS_L ]
+signal_scan :eurex, %w[ EI_RTL EI_RT_CTL SB_RT_CTS ]
+signal_scan :globex, %w[ ED_RT_CTL ED_ZS_L ]
 @scheduler.join
 
 # load 'backfill.rb'
