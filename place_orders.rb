@@ -1,4 +1,8 @@
 #!/usr/bin/env ruby
+require 'csv'
+require 'ib-ruby'
+require 'active_support/all'
+
 if ARGV.empty?
   puts "USAGE: ./place_orders.rb ED_RT_CTL [optional fixed fraction] 0.05"
   exit
@@ -9,15 +13,12 @@ def valid?(signal)
   signal_date == Date.today
 end
 
-require 'csv'
 strategy = ARGV.first
 `scp kmcd@10.211.55.3:/cygdrive/c/tmp/#{strategy}.csv tmp`
+# TODO: if position already open, use next signal -> production environment only
 signal = CSV.read("./tmp/#{strategy}.csv", headers:true).first
-exit unless signal
-puts '= Signal out of date' && exit unless valid?(signal)
+exit unless signal && valid?(signal)
 
-require 'ib-ruby'
-require 'active_support/all'
 client_id = lambda {|_| _.hash.abs.to_s[0...4].to_i }
 ib = IB::Connection.new :client_id => client_id[strategy], :port => 4001
 
