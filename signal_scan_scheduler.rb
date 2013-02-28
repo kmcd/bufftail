@@ -5,7 +5,7 @@ require 'rufus/scheduler'
 TEN_MINS_BEFORE_CLOSE = {
   liffe:'50 17 * * 1-5 Europe/London',
   eurex:'50 21 * * 1-5 Europe/Berlin',
-  globex:'50 15 * * 1-5 America/Chigago'
+  globex:'50 15 * * 1-5 America/Chicago'
 }
 
 def signal_scan(exchange, strategies)
