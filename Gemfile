@@ -1,0 +1,6 @@
+source 'https://rubygems.org'
+gem 'statsample'
+gem 'gruff'
+gem 'active_support'
+gem 'ib-ruby'
+gem 'rufus-scheduler'
