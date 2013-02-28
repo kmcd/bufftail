@@ -8,3 +8,4 @@ puts "= Backfilling"
 wfa = amibroker.AnalysisDocs.Open filename
 wfa.Run 0
 sleep 1 while wfa.IsBusy
+wfa.Close
