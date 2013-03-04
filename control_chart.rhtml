@@ -9,12 +9,13 @@ __END__
 <html>
 <head>
   <style type="text/css">
-    body { margin: auto 15% ;  }
-    img { margin-top: 10% }
+    img { width: 33%; height: 33%; float: left; } */
   </style>
 <head>
 <body>
   <% Dir['./tmp/*.png'].each do |control_chart|%>
-    <img src="<%= File.basename control_chart %>"/>
+    <a href="<%= File.basename control_chart %>">
+      <img src="<%= File.basename control_chart %>"/>
+    </a>
   <% end %>
 </body>

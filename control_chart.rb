@@ -1,28 +1,38 @@
 #!/usr/bin/env ruby
+require 'csv'
+require 'yaml'
+require 'statsample'
+require 'gnuplot'
 
-# Read in trades for strategy
 unless strategy = ARGV.first
   puts "USAGE: ./control_chart.rb ED_RT_CTL"
   exit
 end
 
-require 'csv'
 paper_trades = CSV.read("./tmp/trades.csv", headers:true).
   find_all {|_| _['Order Ref.'] == strategy }.
   map {|_| _['Realized P&L'] }.compact.
   map &:to_f
 
-require 'yaml'
 wfa_trades = YAML.load_file('wfa_trades.yml')[strategy]
+
+# convert to % return
+margin = case strategy
+  when /ED/ ; 500
+  when /EI/ ; 400
+  when /SS/ ; 438
+  when /SB/ ; 400
+end
+paper_trades.map! {|_| (_ / margin).round 4 }
+wfa_trades.map! {|_| (_ / margin).round 4 }
 trades = [ wfa_trades, paper_trades ].flatten
-  
-require 'statsample'
+
 benchmark_mean = wfa_trades.to_scale.mean
 benchmark_stdev = wfa_trades.to_scale.sd
 
 rolling_mean = trades.each_with_index.map do |t,i| 
   roll = i < 10 ? i : 10 
-  trades[i-roll..i].to_scale.mean.to_i
+  trades[i-roll..i].to_scale.mean
 end
 
 rolling_stdev = trades.each_with_index.map do |t,i| 
@@ -30,26 +40,36 @@ rolling_stdev = trades.each_with_index.map do |t,i|
   trades[i-roll..i].to_scale.sd
 end[1..-1].unshift 0
 
-current_mean = rolling_mean.last.round 2
-current_sd = rolling_stdev.last.round 2
+current_mean = rolling_mean.last.round 3
+current_sd = rolling_stdev.last.round 3
 current_ratio = current_sd == 0.0 ? 0 : (rolling_mean.last / rolling_stdev.last).
   round(2)
 
-require 'gruff'
-g = Gruff::Line.new '600x400'
-g.theme = { font_color:'black', background_colors:'white' }
-g.title = strategy + " t:#{trades.size} m:#{current_mean}, s:#{current_sd}, r:#{current_ratio}"
-g.hide_legend = true
-g.line_width = 2
-g.dot_radius = 0
+def data_set(data,title='',color=0,linewidth=1, linetype='lines')
+  Gnuplot::DataSet.new(data) do |_|
+    _.with = linetype
+    _.title = title
+    _.linecolor = color
+    _.linewidth = linewidth
+  end
+end
 
-g.data 'Trades', trades, 'lightgrey'
-g.data 'Rolling mean', rolling_mean, 'black'
-g.data 'Rolling stdev', rolling_stdev, 'lightblue'
-
-g.data 'Mean', [benchmark_mean] * trades.size, 'green'
-g.data 'Zero', [0] * trades.size, 'orange'
-g.data 'Stdev -1', [-benchmark_stdev] * trades.size, 'pink'
-g.data 'Stdev +2', [-benchmark_stdev*2] * trades.size, 'red'
-
-g.write "./tmp/#{strategy.downcase}.png"
+Gnuplot.open do |gp|
+  Gnuplot::Plot.new( gp ) do |_|
+    _.terminal "png"
+    _.output File.expand_path "./tmp/#{strategy.downcase}.png"
+    _.set "terminal png size 800,600"
+    _.title [strategy, current_ratio].join ' '
+    
+    _.data = [
+      data_set(trades, '', 12, 1, 'points'),
+      data_set(rolling_mean, "Mean #{current_mean}", 2, 3),
+      data_set(rolling_stdev, "Stdev #{current_sd}", 3),
+      
+      data_set([benchmark_mean] * trades.size, '', 2),
+      data_set([0] * trades.size, '', 1),
+      data_set([-benchmark_stdev] * trades.size, '', 1),
+      data_set([-benchmark_stdev*2] * trades.size, '', 1)
+    ]
+  end
+end
