@@ -1,6 +1,9 @@
 $LOAD_PATH.unshift File.dirname __FILE__
 require 'rufus/scheduler'
-@scheduler = Rufus::Scheduler.start_new
+
+def scheduler
+  @scheduler ||= Rufus::Scheduler.start_new
+end
 
 TEN_MINS_BEFORE_CLOSE = {
   liffe:'51 17 * * 1-5 Europe/London',
@@ -9,7 +12,7 @@ TEN_MINS_BEFORE_CLOSE = {
 }
 
 def place_orders(exchange, strategies)
-  @scheduler.cron TEN_MINS_BEFORE_CLOSE[exchange] do
+  scheduler.cron TEN_MINS_BEFORE_CLOSE[exchange] do
     strategies.each do |strategy|
       ARGV << strategy
       load 'place_orders.rb'
