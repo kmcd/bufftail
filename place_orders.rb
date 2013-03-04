@@ -96,11 +96,11 @@ stop_order = sell_order limit_price:signal['stop loss'],
 profit_order = sell_order limit_price:signal['exit price'], oca_group:oca_group, 
   order_ref:order_ref
 
-# 15 mins before market close
+# TODO: Use local time zone (15 mins before market close)
 market_close = case signal['Ticker']
-  when /ED/; '21:45:00 GMT'
-  when /IE/; '20:45:00 GMT'
-  when /LL/; '17:30:00 GMT'
+  when /ED/; '21:45:00 GMT' # CST
+  when /IE/; '20:45:00 GMT' # CET
+  when /LL/; '17:30:00 GMT' # BST
 end
 expire_on = [1.day.from_now.to_date.to_s.gsub(/\D/,''), market_close].join ' '
 expiry_order = sell_order order_type:'MKT', good_after_time:expire_on, 
