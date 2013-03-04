@@ -59,7 +59,7 @@ Gnuplot.open do |gp|
     _.terminal "png"
     _.output File.expand_path "./tmp/#{strategy.downcase}.png"
     _.set "terminal png size 800,600"
-    _.title [strategy, current_ratio].join ' '
+    _.title [paper_trades.size, strategy, current_ratio ].join ' '
     
     _.data = [
       data_set(trades, '', 12, 1, 'points'),
