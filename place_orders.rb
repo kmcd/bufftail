@@ -13,36 +13,13 @@ def valid?(signal)
   signal_date == Date.today
 end
 
-strategy = ARGV.first
-`scp kmcd@10.211.55.3:/cygdrive/c/tmp/#{strategy}.csv tmp`
-# TODO: if position already open, use next signal -> production environment only
-signal = CSV.read("./tmp/#{strategy}.csv", headers:true).first
-exit unless signal && valid?(signal)
-
-client_id = lambda {|_| _.hash.abs.to_s[0...4].to_i }
-ib = IB::Connection.new :client_id => client_id[strategy], :port => 4001
-
-@account_balance = 10_000
-ib.subscribe :AccountValue do |msg|
-  account_info = msg.data
-  if account_info[:key] == 'TotalCashBalance' && account_info[:currency] == 'BASE'
-    @account_balance = account_info[:value].to_i
-    account_balance = account_info[:value]
-  end
-end
-ib.send_message :RequestAccountData, subscribe:true
-sleep 1
-ib.send_message :RequestAccountData, subscribe:false
-
-@position_size = if ARGV.size == 2
-  position_risk = signal['stop loss $'].to_f
-  account_risk = ARGV.last.to_f
-  ((account_risk * @account_balance) / position_risk).round
-else
-  1
+def live_account?
+  ARGV.size == 2 && ARGV.last.to_f > 0
 end
 
-ib.subscribe(:Alert, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }
+def port_number
+  live_account? ? 5001 : 4001
+end
 
 def expiry_for(ticker)
   month_code = ticker[/\w\d+$/][/\w/]
@@ -68,7 +45,7 @@ def contract_for(ticker)
 end
 
 def buy_order(args={})
-  IB::Order.new({total_quantity:@position_size, action:'BUY', order_type:'LMT', 
+  IB::Order.new({total_quantity:position_size, action:'BUY', order_type:'LMT', 
     transmit:false, tif:'GTC'}.merge!(args))
 end
 
@@ -80,6 +57,80 @@ def place_order(ib, order, contract, parent=nil)
   order.parent_id = parent.local_id if parent
   ib.place_order order, contract
 end
+
+def market_close(signal)
+  case signal['Ticker']
+    # TODO: Use local time zone (15 mins before market close)
+    when /ED/; '21:45:00 GMT' # CST
+    when /IE/; '20:45:00 GMT' # CET
+    when /LL/; '17:30:00 GMT' # BST
+  end
+end
+
+def open_contracts
+  @open_contracts ||= begin
+    open_contracts = []
+    ib.subscribe(:Alert, :OrderStatus, :OpenOrderEnd) {|msg| }
+    ib.subscribe(:OpenOrder) {|msg| open_contracts << msg.contract }
+    ib.send_message :RequestAllOpenOrders
+    ib.wait_for :OpenOrderEnd
+    open_contracts.map {|_| _.symbol + _.expiry[0...6] } # TODO: DRY up
+  end
+end
+
+def next_available_from(signals)
+  signals.find do |signal|
+    contract = contract_for signal['Ticker']
+    !open_contracts.include?( contract.symbol + contract.expiry[0...6] )
+  end
+end
+
+def account_balance
+  @account_balance ||= begin
+    account_balance = 10_000
+    ib.subscribe :AccountValue do |msg|
+    account_info = msg.data
+    if account_info[:key] == 'TotalCashBalance' && account_info[:currency] == 'BASE'
+      account_balance = account_info[:value].to_i
+      account_balance = account_info[:value]
+    end
+    end
+    ib.send_message :RequestAccountData, subscribe:true
+    sleep 1
+    ib.send_message :RequestAccountData, subscribe:false
+    account_balance.to_f
+  end
+end
+
+def signal
+  @signal ||= begin
+    `scp kmcd@10.211.55.3:/cygdrive/c/tmp/#{strategy}.csv tmp`
+    signals = CSV.read "./tmp/#{strategy}.csv", headers:true
+    signal = live_account? ? next_available_from(signals) : signals.first
+    signal && valid?(signal) ? signal : exit
+  end
+end
+
+def position_size
+  return 1 unless live_account?
+  position_risk = signal['stop loss $'].to_f
+  account_risk = ARGV.last.to_f
+  ((account_risk * account_balance) / position_risk).round
+end
+
+def strategy
+  ARGV.first
+end
+
+def client_id(strategy)
+  strategy.hash.abs.to_s[0...4].to_i
+end
+
+def ib
+  @ib ||= IB::Connection.new client_id:client_id(strategy), port:port_number
+end
+
+ib.subscribe(:Alert, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }
 
 oca_group = [ strategy,  DateTime.now.to_s(:db).gsub(/\D/, '') ].join '_'
 order_ref = strategy
@@ -96,15 +147,9 @@ stop_order = sell_order limit_price:signal['stop loss'],
 profit_order = sell_order limit_price:signal['exit price'], oca_group:oca_group, 
   order_ref:order_ref
 
-# TODO: Use local time zone (15 mins before market close)
-market_close = case signal['Ticker']
-  when /ED/; '21:45:00 GMT' # CST
-  when /IE/; '20:45:00 GMT' # CET
-  when /LL/; '17:30:00 GMT' # BST
-end
-expire_on = [1.day.from_now.to_date.to_s.gsub(/\D/,''), market_close].join ' '
+expire_on = [1.day.from_now.to_date.to_s.gsub(/\D/,''), market_close(signal)].join ' '
 expiry_order = sell_order order_type:'MKT', good_after_time:expire_on, 
-  order_ref:order_ref, oca_group:oca_group, transmit:true # last in bracket order
+  order_ref:order_ref, oca_group:oca_group, transmit:false # last in bracket order
 
 place_order ib, entry_order, contract
 place_order ib, stop_order, contract, entry_order
