@@ -78,13 +78,6 @@ def open_contracts
   end
 end
 
-def next_available_from(signals)
-  signals.find do |signal|
-    contract = contract_for signal['Ticker']
-    !open_contracts.include?( contract.symbol + contract.expiry[0...6] )
-  end
-end
-
 def account_balance
   @account_balance ||= begin
     account_balance = 10_000
@@ -105,8 +98,7 @@ end
 def signal
   @signal ||= begin
     `scp kmcd@10.211.55.3:/cygdrive/c/tmp/#{strategy}.csv tmp`
-    signals = CSV.read "./tmp/#{strategy}.csv", headers:true
-    signal = live_account? ? next_available_from(signals) : signals.first
+    signal = CSV.read("./tmp/#{strategy}.csv", headers:true).first
     signal && valid?(signal) ? signal : exit
   end
 end
@@ -131,11 +123,11 @@ def ib
 end
 
 ib.subscribe(:Alert, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }
+ib.wait_for :NextValidId
 
 oca_group = [ strategy,  DateTime.now.to_s(:db).gsub(/\D/, '') ].join '_'
 order_ref = strategy
 contract = contract_for signal['Ticker']
-ib.wait_for :NextValidId
 
 entry_order = buy_order limit_price:signal['entry price'], transmit:false,
   order_ref:order_ref
@@ -155,5 +147,3 @@ place_order ib, entry_order, contract
 place_order ib, stop_order, contract, entry_order
 place_order ib, profit_order, contract, entry_order
 place_order ib, expiry_order, contract, entry_order
-
-ib.send_message :RequestAllOpenOrders

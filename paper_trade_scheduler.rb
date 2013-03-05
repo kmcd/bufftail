@@ -24,4 +24,4 @@ end
 place_orders :liffe, %w[ SS_RTL SS_RT_CTL ]
 place_orders :eurex, %w[ EI_RTL EI_RT_CTL SB_RT_CTS ]
 place_orders :globex, %w[ ED_RT_CTL ED_ZS_L ]
-@scheduler.join
+scheduler.join
