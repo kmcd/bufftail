@@ -122,7 +122,7 @@ def ib
   @ib ||= IB::Connection.new client_id:client_id(strategy), port:port_number
 end
 
-ib.subscribe(:Alert, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }
+ib.subscribe(:Alert, :OpenOrder, :OrderStatus) {|msg| puts msg.to_human }
 ib.wait_for :NextValidId
 
 oca_group = [ strategy,  DateTime.now.to_s(:db).gsub(/\D/, '') ].join '_'
@@ -141,7 +141,7 @@ profit_order = sell_order limit_price:signal['exit price'], oca_group:oca_group,
 
 expire_on = [1.day.from_now.to_date.to_s.gsub(/\D/,''), market_close(signal)].join ' '
 expiry_order = sell_order order_type:'MKT', good_after_time:expire_on, 
-  order_ref:order_ref, oca_group:oca_group, transmit:false # last in bracket order
+  order_ref:order_ref, oca_group:oca_group, transmit:true # last in bracket order
 
 place_order ib, entry_order, contract
 place_order ib, stop_order, contract, entry_order
