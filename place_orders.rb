@@ -125,6 +125,12 @@ def client_id(strategy)
   strategy.hash.abs.to_s[0...4].to_i
 end
 
+def expiry_for(signal)
+  friday = Date.today.wday == 5
+  expiry = ( friday ? 3 : 1).days.from_now.to_date.to_s.gsub /\D/, ''
+  [expiry, market_close(signal)].join ' '
+end
+
 def ib
   @ib ||= IB::Connection.new client_id:client_id(strategy), port:port_number
 end
@@ -143,11 +149,10 @@ stop_order = sell_order limit_price:signal['stop loss'],
   aux_price:signal['stop loss'], order_type:'STP', 
   oca_group:oca_group, order_ref:order_ref
   
-profit_order = sell_order limit_price:signal['exit price'], oca_group:oca_group, 
+profit_order = sell_order limit_price:signal['exit price'], oca_group:oca_group 
   order_ref:order_ref
 
-expire_on = [1.day.from_now.to_date.to_s.gsub(/\D/,''), market_close(signal)].join ' '
-expiry_order = sell_order order_type:'MKT', good_after_time:expire_on, 
+expiry_order = sell_order order_type:'MKT', good_after_time:expiry_for(signal),
   order_ref:order_ref, oca_group:oca_group, transmit:true # last in bracket order
 
 place_order ib, entry_order, contract
