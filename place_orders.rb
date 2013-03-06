@@ -78,6 +78,11 @@ def open_contracts
   end
 end
 
+def position_open?(signal)
+  contract = contract_for signal['Ticker']
+  !open_contracts.include?( contract.symbol + contract.expiry[0...6] )
+end
+
 def account_balance
   @account_balance ||= begin
     account_balance = 10_000
@@ -95,23 +100,25 @@ def account_balance
   end
 end
 
+def strategy
+  ARGV.first
+end
+
 def signal
   @signal ||= begin
     `scp kmcd@10.211.55.3:/cygdrive/c/tmp/#{strategy}.csv tmp`
-    signal = CSV.read("./tmp/#{strategy}.csv", headers:true).first
-    signal && valid?(signal) ? signal : exit
+    signals = CSV.read "./tmp/#{strategy}.csv", headers:true
+    signals.find {|_| valid?(_) && !position_open?(_) } || exit
   end
 end
+
+throw signal
 
 def position_size
   return 1 unless live_account?
   position_risk = signal['stop loss $'].to_f
   account_risk = ARGV.last.to_f
   ((account_risk * account_balance) / position_risk).round
-end
-
-def strategy
-  ARGV.first
 end
 
 def client_id(strategy)
