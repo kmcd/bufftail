@@ -8,6 +8,18 @@ if ARGV.empty?
   exit
 end
 
+def client_id(strategy)
+  strategy.hash.abs.to_s[0...4].to_i
+end
+
+def port_number
+  live_account? ? 5001 : 4001
+end
+
+def ib
+  @ib ||= IB::Connection.new client_id:client_id(strategy), port:port_number
+end
+
 def valid?(signal)
   signal_date = Date.parse(signal['Date/Time'].gsub(/(\d+)\/(\d+)/, "\\2/\\1"))
   signal_date == Date.today
@@ -15,10 +27,6 @@ end
 
 def live_account?
   ARGV.size == 2 && ARGV.last.to_f > 0
-end
-
-def port_number
-  live_account? ? 5001 : 4001
 end
 
 def expiry_for(ticker)
@@ -107,12 +115,10 @@ end
 def signal
   @signal ||= begin
     `scp kmcd@10.211.55.3:/cygdrive/c/tmp/#{strategy}.csv tmp`
-    signals = CSV.read "./tmp/#{strategy}.csv", headers:true
-    signals.find {|_| valid?(_) && !position_open?(_) } || exit
+    signals = CSV.read("./tmp/#{strategy}.csv", headers:true).first
+    # signals.find {|_| valid?(_) && !position_open?(_) } || exit
   end
 end
-
-throw signal
 
 def position_size
   return 1 unless live_account?
@@ -121,18 +127,10 @@ def position_size
   ((account_risk * account_balance) / position_risk).round
 end
 
-def client_id(strategy)
-  strategy.hash.abs.to_s[0...4].to_i
-end
-
 def expiry_for(signal)
   friday = Date.today.wday == 5
   expiry = ( friday ? 3 : 1).days.from_now.to_date.to_s.gsub /\D/, ''
   [expiry, market_close(signal)].join ' '
-end
-
-def ib
-  @ib ||= IB::Connection.new client_id:client_id(strategy), port:port_number
 end
 
 ib.subscribe(:Alert, :OpenOrder, :OrderStatus) {|msg| puts msg.to_human }
@@ -149,7 +147,7 @@ stop_order = sell_order limit_price:signal['stop loss'],
   aux_price:signal['stop loss'], order_type:'STP', 
   oca_group:oca_group, order_ref:order_ref
   
-profit_order = sell_order limit_price:signal['exit price'], oca_group:oca_group 
+profit_order = sell_order limit_price:signal['exit price'], oca_group:oca_group,
   order_ref:order_ref
 
 expiry_order = sell_order order_type:'MKT', good_after_time:expiry_for(signal),

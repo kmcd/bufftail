@@ -57,7 +57,8 @@ end
 Gnuplot.open do |gp|
   Gnuplot::Plot.new( gp ) do |_|
     _.terminal "png"
-    _.output File.expand_path "./tmp/#{strategy.downcase}.png"
+    filename = [current_ratio.to_s, strategy.downcase].join '_'
+    _.output File.expand_path "./tmp/#{filename}.png"
     _.set "terminal png size 800,600"
     _.title [paper_trades.size, strategy, current_ratio ].join ' '
     
