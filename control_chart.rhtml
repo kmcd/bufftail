@@ -13,7 +13,7 @@ __END__
   </style>
 <head>
 <body>
-  <% Dir['./tmp/*.png'].sort_by {|_| _[/-*\d+/].to_f }.reverse.each do |control_chart|%>
+  <% Dir['./tmp/*.png'].sort_by {|_| _[/-*\d+\.*\d*/].to_f }.reverse.each do |control_chart|%>
     <a href="<%= File.basename control_chart %>">
       <img src="<%= File.basename control_chart %>"/>
     </a>

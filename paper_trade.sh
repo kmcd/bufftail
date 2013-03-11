@@ -5,6 +5,7 @@ ruby place_orders.rb SS_VZ_S
 
 # LIFFE: Euribor
 # EUREX: Schatz
+ruby place_orders.rb EI_MA_L
 ruby place_orders.rb EI_RTL
 ruby place_orders.rb EI_RT_CTL
 ruby place_orders.rb EI_ZS_S

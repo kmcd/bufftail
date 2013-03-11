@@ -2,6 +2,7 @@
 ruby control_chart.rb ED_RT_CTL &&
 ruby control_chart.rb ED_ZS_L &&
 ruby control_chart.rb ED_SP_S &&
+ruby control_chart.rb EI_MA_L &&
 ruby control_chart.rb EI_RTL &&
 ruby control_chart.rb EI_RT_CTL &&
 ruby control_chart.rb EI_ZS_S &&
