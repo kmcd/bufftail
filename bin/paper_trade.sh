@@ -10,6 +10,7 @@ ruby place_orders.rb EI_RTL
 ruby place_orders.rb EI_RT_CTL
 ruby place_orders.rb EI_ZS_S
 
+# EUREX: Schatz
 # GLOBEX: 2 year note
 ruby place_orders.rb SB_RT_CTS
 ruby place_orders.rb SB_MA_L

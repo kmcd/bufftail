@@ -9,12 +9,15 @@ unless strategy = ARGV.first
   exit
 end
 
-paper_trades = CSV.read("./tmp/trades.csv", headers:true).
+paper_trades = CSV.read("../../tmp/trades.csv", headers:true).
   find_all {|_| _['Order Ref.'] == strategy }.
   map {|_| _['Realized P&L'] }.compact.
-  map &:to_f
+  map(&:to_f).
+  map {|_| _ > 20 ? 20.0 : _ }.compact
 
-wfa_trades = YAML.load_file('wfa_trades.yml')[strategy]
+wfa_trades = YAML.load_file("./data/wfa_trades.yml")[strategy].
+  map(&:to_f).
+  map {|_| _ > 20 ? 20.0 : _ }.compact
 
 # convert to % return
 margin = case strategy
