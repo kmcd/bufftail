@@ -25,9 +25,11 @@ margin = case strategy
   when /EI/ ; 400
   when /SS/ ; 438
   when /SB/ ; 400
+  else
+    450
 end
-paper_trades.map! {|_| (_ / margin).round 4 }
-wfa_trades.map! {|_| (_ / margin).round 4 }
+paper_trades.map! {|_| ( _ / margin).round 4 }
+wfa_trades.map! {|_| ( _ / margin).round 4 }
 trades = [ wfa_trades, paper_trades ].flatten
 
 benchmark_mean = wfa_trades.to_scale.mean
@@ -38,15 +40,29 @@ rolling_mean = trades.each_with_index.map do |t,i|
   trades[i-roll..i].to_scale.mean
 end
 
-rolling_stdev = trades.each_with_index.map do |t,i| 
+rolling_stdev = trades.each_with_index.map do |t,i|
   roll = i < 10 ? i : 10
   trades[i-roll..i].to_scale.sd
 end[1..-1].unshift 0
+
+rolling_loss_mean = trades.each_with_index.map do |t,i| 
+  roll = i < 10 ? i : 10 
+  trades[i-roll..i].map {|_| _ > 0 ? 0 : _ }.to_scale.mean
+end
+
+rolling_loss_stdev = trades.each_with_index.map do |t,i| 
+  roll = i < 10 ? i : 10 
+  sd = trades[i-roll..i].map {|_| _ > 0 ? 0 : _ }.to_scale.sd
+  sd.nan? ? 0 : sd
+end
 
 current_mean = rolling_mean.last.round 3
 current_sd = rolling_stdev.last.round 3
 current_ratio = current_sd == 0.0 ? 0 : (rolling_mean.last / rolling_stdev.last).
   round(2)
+current_loss = rolling_loss_mean.last.round 3
+current_semidev = rolling_loss_stdev.last.round 3
+current_loss_ratio = (current_loss/current_semidev).round 2
 
 def data_set(data,title='',color=0,linewidth=1, linetype='lines')
   Gnuplot::DataSet.new(data) do |_|
@@ -60,10 +76,12 @@ end
 Gnuplot.open do |gp|
   Gnuplot::Plot.new( gp ) do |_|
     _.terminal "png"
-    filename = [current_ratio.to_s, strategy.downcase].join '_'
+    objective_function = current_ratio
+    
+    filename = [objective_function.to_s, strategy.downcase].join '_'
     _.output File.expand_path "./tmp/#{filename}.png"
     _.set "terminal png size 800,600"
-    _.title [paper_trades.size, strategy, current_ratio ].join ' '
+    _.title [objective_function, strategy].join ' '
     
     _.data = [
       data_set(trades, '', 12, 1, 'points'),
