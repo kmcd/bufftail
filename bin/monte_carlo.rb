@@ -7,7 +7,7 @@ require 'statsample'
   map {|_| (( _ < -40) ? -40 : _ ).to_f }
   
 # systems to trade selected from xbar chart
-xbar = 1.0
+xbar = 0.80
 trades = @trades.each_with_index.find_all do |t,i|
   roll = i < 30 ? i : 30
   sample = @trades[i-roll...i].to_scale
@@ -17,7 +17,7 @@ end.map &:first
 # Return
 puts "= Position sizer"
 puts "= Total trades: " + @trades.size.to_s
-puts "= Trades: " + trades.size.to_s
+puts "= Trades (xbar #{xbar}): " + trades.size.to_s
 
 account_risk = 0.05
 losing_trades = trades.find_all {|_| _ < 0 }.to_scale

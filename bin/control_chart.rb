@@ -9,18 +9,9 @@ unless strategy = ARGV.first
   exit
 end
 
-paper_trades = CSV.read("../../tmp/trades.csv", headers:true).
-  find_all {|_| _['Order Ref.'] == strategy }.
-  map {|_| _['Realized P&L'] }.compact.
-  map(&:to_f).
-  map {|_| _ > 20 ? 20.0 : _ }.compact
+wfa_trades = YAML.load_file("./data/wfa_trades.yml")[strategy]
 
-wfa_trades = YAML.load_file("./data/wfa_trades.yml")[strategy].
-  map(&:to_f).
-  # map {|_| _ > 20 ? 20.0 : _ }.
-  map {|_| (( _ > 40) ? 40 : _ ).to_f }.
-  map {|_| (( _ < -40) ? -40 : _ ).to_f }.
-  compact
+throw strategy unless wfa_trades
 
 # convert to % return
 margin = case strategy
@@ -31,9 +22,16 @@ margin = case strategy
   else
     450
 end
-paper_trades.map! {|_| ( _ / margin).round 4 }
-wfa_trades.map! {|_| ( _ / margin).round 4 }
-trades = [ wfa_trades, paper_trades ].flatten
+
+margin_risk = margin/10.0
+
+wfa_trades.
+  map(&:to_f).
+  map {|_| (( _ > margin_risk) ? margin_risk : _ ).to_f }.
+  map {|_| (( _ < -margin_risk) ? -margin_risk : _ ).to_f }.
+  compact
+
+trades = wfa_trades.map! {|_| ( _ / margin).round 4 }.flatten
 
 benchmark_mean = trades.each_with_index.map {|t,i| trades[0..i].to_scale.mean }
 benchmark_stdev = trades.each_with_index.map {|t,i| trades[0..i].to_scale.sd }
@@ -75,7 +73,7 @@ Gnuplot.open do |gp|
     
     _.data = [
       data_set(trades, '', 12, 1, 'points'),
-      data_set(rolling_mean, "Mean 20 #{current_mean}", 2, 3),
+      data_set(rolling_mean, "Mean #{current_mean}", 2, 3),
       data_set(rolling_stdev, "Stdev #{current_sd}", 3),
       data_set([0] * trades.size, '', 1)
     ]
