@@ -1,0 +1,7 @@
+#include <stir_spread.afl>
+#include <volatility_filter.afl>
+
+lookback = Optimize("lb",10,4,10,2);
+
+Short = volume_filter && volatility_filter  && Cross( 30, StochK(10) );
+Buy = Sell = Cover = False;

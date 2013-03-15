@@ -1,0 +1,12 @@
+#include <stir_spread.afl>
+#include <volatility_filter.afl>
+#include <z_score.afl>
+
+// ROC(C,1) < 0 && ROC(O,1) < 0
+down_today = ROC(C,1) < 0;
+zv = zscore( StDev( ROC(C,1), lookback), lookback);
+volatility_filter = zv < 1.65 && zv > -1;
+down_trend = C <= MA(C,5);
+
+Short = volume_filter && volatility_filter  && down_today && volatility_filter && down_trend;
+Buy = volatility_filter &&  Cover = Sell = False;

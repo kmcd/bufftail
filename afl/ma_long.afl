@@ -1,0 +1,6 @@
+#include <stir_spread.afl>
+#include <volatility_filter.afl>
+
+
+Buy = volatility_filter &&  Cross( C, MA(C, lookback) ) && MA(V, 10) > 1000 ;
+Sell = Short = Cover = False;

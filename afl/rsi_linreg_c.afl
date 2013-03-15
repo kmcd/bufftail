@@ -1,0 +1,1 @@
+Plot( RSIa(LinRegSlope( C, 10), 10), "RSI( lr C, 10)", colorTeal);

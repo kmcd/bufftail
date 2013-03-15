@@ -1,0 +1,7 @@
+#include <stir_spread.afl>
+#include <volatility_filter.afl>
+
+PositionScore = RSI(lookback);
+
+Short = volume_filter && high_volatility_filter  && Cross( 70, RSI(lookback) );
+Buy = Sell = Cover = False;

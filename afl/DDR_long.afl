@@ -1,0 +1,12 @@
+#include <stir_spread.afl>
+#include <volatility_filter.afl>
+
+#include <dollar_return.afl>
+#include <runs_test_zscore.afl>
+
+//dollar_return > 0;//Optimize("dr",100,0,200,12.5);
+
+PositionScore = ComputeRunZ(ROC(C,1),10);
+
+Buy = volatility_filter &&  volume_filter && ROC(C,1) > 0 && C >= MA(C,10) ; 
+Sell = Short = Cover = False;

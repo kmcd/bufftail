@@ -1,0 +1,11 @@
+#include <stir_spread.afl>
+#include <volatility_filter.afl>
+#include <z_score.afl>
+
+stoch = StochK(6, 3);
+uptrend = ROC(stoch,1) < 0 && ROC(C,1) < 0;
+zv = zscore( StDev( ROC(C,1), 10), 10);
+volatility_filter = zv > -1 && zv < 1.65;
+
+Short = volume_filter && volatility_filter  && uptrend && volatility_filter;
+Buy = volatility_filter &&  Cover = Sell = True;

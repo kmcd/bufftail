@@ -1,0 +1,8 @@
+Sell = Short = Cover = False; 
+PositionSize = MarginDeposit;
+
+lb = Optimize("lb", 1, 1, 10, 1);
+hp = Optimize("hp", 1, 1, 5, 1);
+
+Buy	= C <= LLV(L, lb);
+ApplyStop( stopTypeNBar, stopModeBars, 1, 0 );

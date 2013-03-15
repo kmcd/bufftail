@@ -1,0 +1,11 @@
+#include <stir_spread.afl>
+#include <volatility_filter.afl>
+#include <runs_test_zscore.afl>
+
+autocorrelation = ComputeRunZ(ROC(C,1), lookback);
+acr = autocorrelation * ROC(C,lookback);
+PositionScore = -acr;
+negative_momentum = acr <= LLV(acr,lookback) && ROC(acr,lookback) < 0;
+
+Short = volume_filter && volatility_filter  && negative_momentum;
+Buy = Sell = Cover = False;

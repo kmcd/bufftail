@@ -1,0 +1,15 @@
+PositionSize = MarginDeposit;
+
+threshold = Optimize("threshold", 0.8, 0.4, 1.0, 0.2);
+correl = Correlation( ROC(O,1), ROC(O,10), 10 ) ;
+
+Buy = volatility_filter &&  ROC(O,1) > 0 && correl > threshold;
+Sell = Short = Cover = False;
+
+sl = (300 / (TickSize * PointValue)) * TickSize;
+pt = 2; //Optimize("pt", 1.5, 1.5, 2.5, 0.5);
+hp = 1;//Optimize("hp", 1, 1, 5, 1);
+
+ApplyStop( stopTypeProfit, stopModePercent, sl*pt, 1);
+ApplyStop( stopTypeNBar, stopModeBars, Hp, 0 );
+ApplyStop( stopTypeLoss, stopModePercent, sl, 1);

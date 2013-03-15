@@ -1,0 +1,9 @@
+#include <stir_spread.afl>
+#include <volatility_filter.afl>
+
+
+//ROC( RSI(lookback), 1 ) > 0;
+entry = Optimize("entry", 80, 60, 80, 5 );
+
+Buy = volatility_filter &&  Cross( RSI(lookback), entry );
+Sell = Short = Cover = False;

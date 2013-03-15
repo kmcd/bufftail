@@ -1,0 +1,8 @@
+#include <stir_spread.afl>
+#include <volatility_filter.afl>
+
+
+lookback = 10;//Optimize("HHC", 1,5,10,1); // 0.003 k-ratio improvement
+
+Short = volume_filter && high_volatility_filter  && C >= HHV(C,lookback) ;
+Buy = Sell = Cover = False;

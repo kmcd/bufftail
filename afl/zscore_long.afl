@@ -1,0 +1,9 @@
+#include <stir_spread.afl>
+#include <volatility_filter.afl>
+#include <z_score.afl>
+
+zz = zscore(ROC(C,1),lookback) ;
+//PositionScore = zz;
+
+Buy = volatility_filter &&  volume_filter && Cross( zz, 1.65 );
+Short = Sell = Cover = False;

@@ -1,0 +1,3 @@
+#include <rsi_con_short.afl>
+
+Buy = volatility_filter &&  entry_signal && InWatchListName("eurodollar_spreads");

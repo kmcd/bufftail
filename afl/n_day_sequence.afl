@@ -1,0 +1,11 @@
+OptimizerSetEngine("cmae");
+PositionSize = MarginDeposit;
+
+up = ROC(C,1) < 0;
+sequence = 4;//Optimize("seq", 1, 1, 10, 1);
+hp = 1;//Optimize("hp", 1, 1, 5, 1);
+
+Buy = volatility_filter &&  Sum( up, sequence ) == sequence;
+ApplyStop(stopTypeNBar, stopModeBars, hp);
+
+Short = Sell = Cover = False;

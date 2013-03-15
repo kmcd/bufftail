@@ -1,0 +1,14 @@
+OptimizerSetEngine("cmae");
+PositionSize = MarginDeposit;
+
+lookback = 10; //Optimize("lookback", 10, 1, 10, 1);
+Buy = volatility_filter &&  O > HHV(H, lookback);
+Short = Sell = Cover = False; 
+
+sl = (300 / (TickSize * PointValue)) * TickSize;
+pt = 2; //Optimize("pt", 1.5, 1.5, 2.5, 0.5);
+hp = 5; //Optimize("hp", 1, 1, 5, 1);
+
+ApplyStop( stopTypeProfit, stopModePercent, sl*pt, 1);
+ApplyStop( stopTypeNBar, stopModeBars, hp, 0 );
+ApplyStop( stopTypeLoss, stopModePercent, sl, 1);

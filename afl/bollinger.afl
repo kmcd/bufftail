@@ -1,0 +1,7 @@
+PositionSize = MarginDeposit;
+
+Buy = volatility_filter &&  C >= BBandTop( C, 10, 1 ) ;
+Sell = C < BBandTop( C, 10, 1 );
+
+Short = C <= BBandBot( C, 10, 1 );
+Cover = C > BBandBot( C, 10, 1 );

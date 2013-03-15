@@ -1,0 +1,6 @@
+#include_once <stir_spread.afl>
+
+entry = Optimize("entry", 20, 20, 40, 5 );
+
+Short = Cross( RSI(lookback), entry );
+Sell = Buy = volatility_filter &&  Cover = False;

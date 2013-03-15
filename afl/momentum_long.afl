@@ -1,0 +1,6 @@
+#include <stir_spread.afl>
+#include <volatility_filter.afl>
+
+
+Buy = volatility_filter &&  volume_filter && Cross( LinRegSlope(ROC(C,lookback),lookback), 0 ) ;
+Sell = Short = Cover = False;

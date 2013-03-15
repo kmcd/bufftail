@@ -1,0 +1,11 @@
+#include <stir_spread.afl>
+#include <volatility_filter.afl>
+#include <volatility_filter.afl>
+
+lookback = Optimize("lb", 10, 5, 10, 1);
+volatility_filter = StDev(C,lookback) >= HHV(StDev(C,lookback),lookback);
+
+PositionScore = StDev(C,lookback) * RSI(lookback) ;
+
+Short = Cross( RSI(lookback), 70) && volatility_filter;
+Buy = Sell = Cover = False;

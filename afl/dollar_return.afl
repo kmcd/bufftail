@@ -1,0 +1,8 @@
+#include <stir_spread.afl>
+#include <volatility_filter.afl>
+
+
+dollar_return = ((C - Ref(C, -1)) / TickSize) * (TickSize * PointValue);
+
+Buy = volatility_filter &&  dollar_return <= -Optimize("dr",-100,-MarginDeposit,-100, (TickSize * PointValue));
+Sell = Short = Cover = False;

@@ -1,0 +1,8 @@
+#include <stir_spread.afl>
+#include <volatility_filter.afl>
+
+spread_contract = ParamStr("Spread", "EZ#C");
+spread = C/Foreign(spread_contract,"C");
+
+Short = volume_filter && volatility_filter  && Cross( RSIa(spread,lookback), 70);
+Buy = Sell = Cover = False;

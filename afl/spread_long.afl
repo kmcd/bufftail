@@ -1,0 +1,10 @@
+#include <stir_spread.afl>
+#include <volatility_filter.afl>
+#include <z_score.afl>
+
+spread = ParamStr("spread","@TU#C");
+spread_z = zscore(RelStrength(spread),lookback);
+threshold = 1.65;//Optimize("ts",1.6, 1, 2, 0.1);
+
+Buy = volatility_filter &&  volume_filter && Cross(spread_z,threshold);
+Short = Sell = Cover = False;

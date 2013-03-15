@@ -1,0 +1,9 @@
+#include <stir_spread.afl>
+#include <volatility_filter.afl>
+
+#include <dollar_return.afl>
+
+overbought = 200;//Optimize("dr",threshold,threshold,MarginDeposit,dollar_tick);
+
+Short = volume_filter && high_volatility_filter  && dollar_return >= overbought;
+Sell = Buy =  &&  Cover = False;

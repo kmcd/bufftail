@@ -1,0 +1,11 @@
+PositionSize = MarginDeposit;
+
+lookback = 5;//Optimize("lookback", 10, 1, 10, 1);
+threshold = 0.6; //Optimize("threshold", 0.8, 0, 1.0, 0.1);
+correl = Correlation( ROC(C,1), ROC(C,lookback), lookback ) ;
+
+Buy = volatility_filter &&  ROC(C,1) > 0 && correl > threshold;
+Sell = Short = Cover = False;
+
+ApplyStop(stopTypeLoss, stopModePercent, 0.15, 1);
+ApplyStop(stopTypeNBar, stopModeBars, 1, 0);

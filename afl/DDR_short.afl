@@ -1,0 +1,9 @@
+#include <stir_spread.afl>
+#include <volatility_filter.afl>
+
+#include <dollar_return.afl>
+
+oversold = -100;//Optimize("dr",-threshold,-MarginDeposit,-threshold,dollar_tick);
+
+Short = volume_filter && volatility_filter  && dollar_return < 0 && dollar_return >= -(MarginDeposit*0.5);
+Sell = Buy = volatility_filter &&  Cover = False;

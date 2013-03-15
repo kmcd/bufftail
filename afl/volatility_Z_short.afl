@@ -1,0 +1,13 @@
+#include <stir_spread.afl>
+#include <volatility_filter.afl>
+#include <z_score.afl>
+
+lookback = 10;//Optimize("lb", 10, 6, 10, 2);
+zz = zscore(ROC(C,1),lookback) ;
+zs = zscore(StDev(C,lookback), lookback) ;
+zcomb = (zz+zs)/2;
+downtrend = C <= MA(C,lookback);
+//PositionScore = -zcomb; // volume may be better
+
+Short = volume_filter && volatility_filter  && downtrend && (Cross( 0.8, zcomb ) || Cross( -1, zcomb ));
+Buy = Sell = Cover = False;

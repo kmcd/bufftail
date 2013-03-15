@@ -1,0 +1,16 @@
+OptimizerSetEngine("cmae");
+
+overbought_threshold = 0.13; //Optimize("overbought", 0.1, 0.1, 1.0, 0.01);
+overbought = ROC(C,1) > overbought_threshold;
+Short = C >= Ref( H, -1) && overbought;
+  
+Buy = Sell = Cover = False; 
+PositionSize = MarginDeposit;
+
+sl = (300 / (TickSize * PointValue)) * TickSize;
+pt = 2.5;//Optimize("pt", 1.0, 1.0, 3.0, 0.5);
+hp = 1;//Optimize("hp", 1, 1, 5, 1);
+
+ApplyStop( stopTypeProfit, stopModePercent, sl*pt, 1);
+ApplyStop( stopTypeNBar, stopModeBars, hp, 0 );
+ApplyStop( stopTypeLoss, stopModePercent, sl, 1);

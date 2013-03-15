@@ -1,0 +1,17 @@
+//Plot( Correlation( ROC(O,1), ROC(C, 1), 10 ), "O-C correl", colorOrange, styleHistogram) ;
+
+PositionSize = MarginDeposit;
+
+OptimizerSetEngine("cmae");
+roc_lookback = 1;//Optimize("rl", 1, 0, 5, 1);
+correl_lookback = 4;//Optimize("cl", 1, 0, 5, 1);
+threshold = 0.4;//Optimize("th", 0.5, 0.4, 0.7, 0.1);
+
+entry = Correlation( ROC(O,roc_lookback), ROC(C, roc_lookback), correl_lookback );
+
+Buy = volatility_filter &&  entry >= threshold; 
+Short = Sell = Cover = False;
+
+ApplyStop(stopTypeProfit, stopModePercent, 8);
+ApplyStop(stopTypeLoss, stopModePercent, 4, 0);
+//ApplyStop(stopTypeNBar, stopModeBars, 1, 0);

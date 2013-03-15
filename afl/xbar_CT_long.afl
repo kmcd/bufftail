@@ -1,0 +1,8 @@
+#include <stir_spread.afl>
+#include <volatility_filter.afl>
+#include <z_score.afl>
+
+xbar = MA( ROC(C,1), 10 ) / StDev( ROC(C,1), 10);
+
+Buy =  high_volatility_filter &&  volume_filter && xbar <= LLV(xbar,10);
+Sell = Short = Cover = False;

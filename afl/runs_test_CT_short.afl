@@ -1,0 +1,14 @@
+#include <stir_spread.afl>
+#include <volatility_filter.afl>
+#include <runs_test_zscore.afl>
+#include <z_score.afl>
+
+autocorrelation = ComputeRunZ(ROC(C,1), lookback);
+acr = autocorrelation * ROC(C,lookback);
+
+PositionScore = zscore(acr,lookback);
+z_threshold = Optimize("acr Z threshold", 1,1,2,0.25);
+
+// crossing above Z threshold
+Short = volume_filter && high_volatility_filter  && Cross( zscore(acr,lookback), z_threshold );
+Buy = Sell = Cover = False;

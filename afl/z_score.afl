@@ -1,0 +1,23 @@
+function zscore(price,Length) {
+	av = MA(price,Length); 
+	st = StDev(price,Length); 
+	zs = (price - av) / st; 
+	return zs;
+}
+
+PositionSize = MarginDeposit;
+z_threshold = Optimize("th", -1.9, -2.0, 0, 0.1);
+zz = zscore(O,10);
+
+Buy = volatility_filter &&  Cross(zz, z_threshold) && Ref(zz,-1) < z_threshold;
+Short = Cover = Sell = False;
+
+ApplyStop(stopTypeProfit, stopModePoint, TickSize * 4);
+ApplyStop(stopTypeLoss, stopModePoint, TickSize * 2, 0);
+ApplyStop( stopTypeNBar, stopModeBars, 10, 0);
+
+// Plot the z-score and some reference levels 
+Plot(zz,"z-score",colorTeal,styleLine|styleOwnScale,-2,2); 
+Plot(0,"0",colorBlue,styleLine|styleOwnScale,-2,2); 
+Plot(1,"1",colorGreen,styleLine|styleOwnScale,-2,2); 
+Plot(-1,"-1",colorRed,styleLine|styleOwnScale,-2,2);

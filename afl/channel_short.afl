@@ -1,0 +1,8 @@
+#include <stir_spread.afl>
+#include <volatility_filter.afl>
+
+
+lookback = Optimize("LLC", 1,5,10,1);
+
+Short = volume_filter && volatility_filter  && C <=  LLV(C,lookback);
+Buy = Sell = Cover = False;

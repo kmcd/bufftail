@@ -1,0 +1,9 @@
+#include <stir_spread.afl>
+#include <volatility_filter.afl>
+
+
+threshold = Optimize("entry", 1,0.1,1,0.1);
+
+Buy = volatility_filter &&  ROC(C, 10) > threshold;
+Short = ROC(C, 10) < -threshold;
+Sell = Cover = False;

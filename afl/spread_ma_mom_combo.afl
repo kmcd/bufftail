@@ -1,0 +1,18 @@
+#include <stir_spread.afl>
+#include <volatility_filter.afl>
+#include <z_score.afl>
+#include <runs_test_zscore.afl>
+
+spread = ParamStr("spread","@TU#C");
+spread_z = zscore(RelStrength(spread),lookback);
+threshold = Optimize("ts",1.6, 1, 2, 0.1);
+autocorrelation = ComputeRunZ(ROC(C,1), lookback);
+acr = autocorrelation * ROC(C,lookback);
+
+// System combintation
+uptrend = Cross( C, MA(C,lookback));
+spread_reverting = ( Cross(spread_z, -threshold) || Cross(-threshold, spread_z) );
+momentum = acr >= HHV(acr,lookback) && ROC(acr,lookback) > 0 ;
+
+Buy = volatility_filter &&  volume_filter && (uptrend || momentum);
+Short = Sell = Cover = False;

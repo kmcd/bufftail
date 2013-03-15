@@ -1,0 +1,16 @@
+PositionSize = MarginDeposit;
+
+lookback = 2; // Optimize("lookback", 5, 1, 5, 1);
+threshold = 0.4;//Optimize("threshold", 0.8, 0, 0.8, 0.2);
+correl = Correlation( ROC(C,1), ROC(C,lookback), lookback ) ;
+
+Buy = volatility_filter &&  ROC(C,1) < 0 & correl < threshold;
+Sell = Short = Cover = False;
+
+sl = (300 / (TickSize * PointValue)) * TickSize;
+pt = 2; //Optimize("pt", 1.5, 1.5, 2.5, 0.5);
+hp = 2; //Optimize("hp", 1, 1, 5, 1);
+
+ApplyStop( stopTypeProfit, stopModePercent, sl*pt, 1);
+ApplyStop( stopTypeNBar, stopModeBars, Hp, 0 );
+ApplyStop( stopTypeLoss, stopModePercent, sl, 1);

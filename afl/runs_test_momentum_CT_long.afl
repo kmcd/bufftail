@@ -1,0 +1,14 @@
+#include <stir_spread.afl>
+#include <volatility_filter.afl>
+#include <runs_test_zscore.afl>
+
+autocorrelation = ComputeRunZ(ROC(C,1), lookback);
+downtrend = ROC(C,lookback) < 0 && C <= MA(C,lookback);
+acr = autocorrelation * ROC(C,lookback);
+
+PositionScore = acr;
+
+Buy =  high_volatility_filter &&  volume_filter && acr <= LLV(acr,lookback) && ROC(acr,lookback) < 0 ;
+Short = Sell = Cover = False;
+
+Plot( acr, "acr", colorGreen);
