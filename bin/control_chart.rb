@@ -10,7 +10,6 @@ unless strategy = ARGV.first
 end
 
 wfa_trades = YAML.load_file("./data/wfa_trades.yml")[strategy]
-
 throw strategy unless wfa_trades
 
 # convert to % return
