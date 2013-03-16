@@ -23,7 +23,7 @@ margin = case strategy
     450
 end
 
-margin_risk = margin/10.0
+margin_risk = margin * 0.1
 
 wfa_trades.
   map(&:to_f).

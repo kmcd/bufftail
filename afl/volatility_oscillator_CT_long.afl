@@ -1,6 +1,7 @@
-#include <stir_spread.afl>
+#include_once <stir_spread.afl>
+#include <z_score.afl>
 #include <volatility_filter.afl>
-#include <volatility_filter.afl>
+
 
 PositionScore =  StDev(ROC(C,1),10);
 

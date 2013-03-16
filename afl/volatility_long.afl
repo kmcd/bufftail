@@ -1,5 +1,7 @@
-#include <stir_spread.afl>
+#include_once <stir_spread.afl>
+#include <z_score.afl>
 #include <volatility_filter.afl>
+
 
 lookback = 10;
 volatility_increacing = Cross( StDev(C,lookback) , Optimize("vol", 0.1, 0.02, 0.1, 0.02) ) ;

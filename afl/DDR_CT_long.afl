@@ -1,7 +1,9 @@
-#include <stir_spread.afl>
+#include_once <stir_spread.afl>
+#include <z_score.afl>
 #include <volatility_filter.afl>
 
-#include <dollar_return.afl>
+
+#include_once <dollar_return.afl>
 
 Buy =  high_volatility_filter &&  volume_filter && dollar_return <= -MarginDeposit*0.5;
 Sell = Short = Cover = False;

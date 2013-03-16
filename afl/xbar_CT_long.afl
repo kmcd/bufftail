@@ -1,6 +1,6 @@
-#include <stir_spread.afl>
-#include <volatility_filter.afl>
+#include_once <stir_spread.afl>
 #include <z_score.afl>
+#include <volatility_filter.afl>
 
 xbar = MA( ROC(C,1), 10 ) / StDev( ROC(C,1), 10);
 

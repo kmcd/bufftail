@@ -2,14 +2,14 @@ require 'yaml'
 require 'statsample'
 
 @trades = YAML.load_file("./data/wfa_trades.yml").
-  map {|strategy, _| _ }.flatten.
-  map {|_| (( _ > 40) ? 40 : _ ).to_f }.
-  map {|_| (( _ < -40) ? -40 : _ ).to_f }
+  map {|strategy, _| _ }.flatten
+  # map {|_| (( _ > 40) ? 40 : _ ).to_f }.
+  # map {|_| (( _ < -40) ? -40 : _ ).to_f }
   
 # systems to trade selected from xbar chart
-xbar = 0.80
+xbar = 0.8
 trades = @trades.each_with_index.find_all do |t,i|
-  roll = i < 30 ? i : 30
+  roll = i < 10 ? i : 10
   sample = @trades[i-roll...i].to_scale
   (sample.mean/sample.sd) >= xbar
 end.map &:first
@@ -19,10 +19,10 @@ puts "= Position sizer"
 puts "= Total trades: " + @trades.size.to_s
 puts "= Trades (xbar #{xbar}): " + trades.size.to_s
 
-account_risk = 0.05
+account_risk = 0.1
 losing_trades = trades.find_all {|_| _ < 0 }.to_scale
 max_loss = losing_trades.min.abs
-loss_95 = losing_trades.mean.abs+(losing_trades.sd*0)
+loss_95 = losing_trades.mean.abs+(losing_trades.sd*2)
 risk = max_loss
 trades_per_year = 150
 account = 10_000

@@ -1,4 +1,4 @@
-#include "Formulas\Custom\runs_test.afl";
+#include_once "Formulas\Custom\runs_test.afl";
 
 PositionSize = MarginDeposit;
 

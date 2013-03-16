@@ -1,5 +1,7 @@
-#include <stir_spread.afl>
+#include_once <stir_spread.afl>
+#include <z_score.afl>
 #include <volatility_filter.afl>
+
 
 
 entry = Optimize("entry", 70, 60, 80, 5 );

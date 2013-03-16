@@ -1,5 +1,5 @@
-#include <stir_spread.afl>
-#include <volatility_filter.afl>
+#include_once <stir_spread.afl>
+#include <z_score.afl>
 #include <volatility_filter.afl>
 
 lookback = Optimize("lb", 10, 5, 10, 1);

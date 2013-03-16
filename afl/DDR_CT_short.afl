@@ -1,7 +1,9 @@
-#include <stir_spread.afl>
+#include_once <stir_spread.afl>
+#include <z_score.afl>
 #include <volatility_filter.afl>
 
-#include <dollar_return.afl>
+
+#include_once <dollar_return.afl>
 
 overbought = 200;//Optimize("dr",threshold,threshold,MarginDeposit,dollar_tick);
 

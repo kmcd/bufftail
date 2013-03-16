@@ -1,6 +1,8 @@
-#include <stir_spread.afl>
-#include <runs_test_zscore.afl>
+#include_once <stir_spread.afl>
+#include_once <runs_test_zscore.afl>
+#include <z_score.afl>
 #include <volatility_filter.afl>
+
 
 autocorrelation = ComputeRunZ(ROC(C,1), lookback);
 acr = autocorrelation * ROC(C,lookback);

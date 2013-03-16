@@ -2,8 +2,9 @@ require 'nokogiri'
 require 'open-uri'
 require 'YAML'
 
-
-todays_reports =  `ls -tr ./Reports/*ample*/trades.html | grep '#{Time.now.to_s.gsub(/\D/, '')[0...8]}'`
+today = Time.now.to_s.gsub(/\D/, '')[0...8]
+`scp -Cr 'kmcd@10.211.55.3:/cygdrive/c/Program*/Amibroker/Reports/*Out-of-Sample*#{today}*' tmp`
+todays_reports =  `ls -tr ./tmp/*ample*/trades.html | grep '#{today}'`
 
 trades = todays_reports.split("\n").uniq {|_| _[/[A-Z]+_[A-Z]+_*[A-Z]*/] }.sort.map do |report|
   strategy = report[/[A-Z]+_[A-Z]+_*[A-Z]*/]
@@ -13,4 +14,4 @@ trades = todays_reports.split("\n").uniq {|_| _[/[A-Z]+_[A-Z]+_*[A-Z]*/] }.sort.
   [strategy, trades]
 end
 
-File.open('trades.yml','w') {|_| _.puts Hash[ trades ].to_yaml }
+File.open('./data/wfa_trades.yml','w') {|_| _.puts Hash[ trades ].to_yaml }

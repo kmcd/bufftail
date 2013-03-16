@@ -1,5 +1,7 @@
-#include <stir_spread.afl>
+#include_once <stir_spread.afl>
+#include <z_score.afl>
 #include <volatility_filter.afl>
+
 
 
 dollar_return = ((C - Ref(C, -1)) / TickSize) * (TickSize * PointValue);

@@ -1,6 +1,8 @@
-#include <stir_spread.afl>
-#include <volatility_filter.afl>
+#include_once <stir_spread.afl>
 #include <z_score.afl>
+#include <volatility_filter.afl>
+
+#include_once <z_score.afl>
 
 spread = ParamStr("spread","@TU#C");
 spread_z = zscore(RelStrength(spread),lookback);

@@ -1,6 +1,8 @@
-#include <stir_spread.afl>
-#include <volatility_filter.afl>
+#include_once <stir_spread.afl>
 #include <z_score.afl>
+#include <volatility_filter.afl>
+
+#include_once <z_score.afl>
 
 stoch = StochK(10, 3);
 uptrend = ROC(stoch,1) > 0 && ROC(C,1) > 0;
