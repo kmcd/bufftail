@@ -7,7 +7,7 @@ require 'statsample'
   # map {|_| (( _ < -40) ? -40 : _ ).to_f }
   
 # systems to trade selected from xbar chart
-xbar = 1.65
+xbar = 1.0
 trades = @trades.each_with_index.find_all do |t,i|
   roll = i < 10 ? i : 10
   sample = @trades[i-roll...i].to_scale

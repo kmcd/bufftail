@@ -15,7 +15,7 @@ __END__
 <body>
   <% 
     control_charts = Dir['./tmp/*.png'].
-      find_all {|_| _[/-*\d+\.*\d*/].to_f > 0.25 }.
+      find_all {|_| _[/-*\d+\.*\d*/].to_f > 0.8 }.
       sort_by {|_| _[/-*\d+\.*\d*/].to_f }.reverse
   %>
 

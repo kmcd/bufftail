@@ -22,7 +22,7 @@ margin = case strategy
     450
 end
 
-margin_risk = margin * 0.1
+margin_risk = margin * 0.5
 
 wfa_trades.
   map(&:to_f).
@@ -35,13 +35,15 @@ trades = wfa_trades.map! {|_| ( _ / margin).round 4 }.flatten
 benchmark_mean = trades.each_with_index.map {|t,i| trades[0..i].to_scale.mean }
 benchmark_stdev = trades.each_with_index.map {|t,i| trades[0..i].to_scale.sd }
 
+lookback = 10
+
 rolling_mean = trades.each_with_index.map do |t,i| 
-  roll = i < 30 ? i : 30
+  roll = i < lookback ? i : lookback
   trades[i-roll..i].to_scale.mean
 end
 
 rolling_stdev = trades.each_with_index.map do |t,i|
-  roll = i < 30 ? i : 30
+  roll = i < lookback ? i : lookback
   trades[i-roll..i].to_scale.sd
 end[1..-1].unshift 0
 
