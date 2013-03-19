@@ -1,9 +1,0 @@
-PositionSize = MarginDeposit;
-
-Buy = volatility_filter &&  C > MA(C, 10) && ROC(C,1) > 0;
-Short = C < MA(C, 10) && ROC(C,1) < 0;
-
-hp = Optimize("Holding period", 1, 1, 5, 1);
-ApplyStop( stopTypeNBar, stopModeBars, 1 ); 
-
-Cover = Sell = True;

@@ -2,8 +2,5 @@
 #include <z_score.afl>
 #include <volatility_filter.afl>
 
-zv = zscore( StDev( ROC(C,1), lookback), lookback);
-volatility_filter = abs(zv) > 1;
-
-Buy = high_volatility_filter &&  volume_filter && && C <= LLV(C,lookback);
+Buy = high_volatility_filter && volume_filter && C <= LLV(C,lookback);
 Short = Sell = Cover = False;

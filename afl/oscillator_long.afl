@@ -2,9 +2,8 @@
 #include <z_score.afl>
 #include <volatility_filter.afl>
 
+Buy = volatility_filter && 
+	volume_filter && 
+	Cross(RSI(lookback), 70);
 
-
-PositionScore = RSI(lookback);
-
-Buy = volatility_filter &&  volume_filter && Cross(RSI(lookback), 70);
 Short = Sell = Cover = False;

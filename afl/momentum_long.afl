@@ -2,7 +2,12 @@
 #include <z_score.afl>
 #include <volatility_filter.afl>
 
+momentum = LinRegSlope(ROC(C/O,lookback),lookback);
 
+Buy = volatility_filter &&
+	volume_filter && 
+	Cross( momentum, 0 ) ;
 
-Buy = volatility_filter &&  volume_filter && Cross( LinRegSlope(ROC(C,lookback),lookback), 0 ) ;
 Sell = Short = Cover = False;
+
+Plot(momentum, "MO", colorYellow);

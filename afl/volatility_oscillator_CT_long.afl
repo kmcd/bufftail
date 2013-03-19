@@ -1,9 +1,0 @@
-#include_once <stir_spread.afl>
-#include <z_score.afl>
-#include <volatility_filter.afl>
-
-
-PositionScore =  StDev(ROC(C,1),10);
-
-Buy =  high_volatility_filter &&  Cross(30, RSI(lookback));
-Short = Sell = Cover = False;

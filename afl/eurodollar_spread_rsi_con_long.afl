@@ -1,3 +1,0 @@
-#include_once <rsi_con_long.afl>
-
-Buy = volatility_filter &&  entry_signal && InWatchListName("eurodollars");

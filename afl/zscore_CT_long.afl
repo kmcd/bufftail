@@ -3,11 +3,7 @@
 #include <volatility_filter.afl>
 
 zs = zscore(ROC(C,1), lookback);
-zv = zscore( StDev( C, lookback), lookback);
+z_entry = Cross(zs, Optimize("z",-1,-2,0,0.2)); 
 
-volatility = 1;//Optimize("v",1,0.5,2,0.1);
-z_entry = Cross(zs, Optimize("z",-1,-2,0,0.2) );
-risk_filter = zv < volatility && zv > -volatility;
-
-Buy =  high_volatility_filter &&  volume_filter && z_entry && risk_filter;
+Buy =  high_volatility_filter && volume_filter && z_entry;
 Sell = Short = Cover = False;

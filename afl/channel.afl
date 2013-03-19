@@ -1,2 +1,0 @@
-//Plot( Ref(H, -10), "High", colorGreen);
-//Plot( Ref(L, -10), "Low", colorRed);

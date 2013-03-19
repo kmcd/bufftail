@@ -2,16 +2,16 @@
 #include <z_score.afl>
 #include <volatility_filter.afl>
 
-#include_once <z_score.afl>
-
 up_today = ROC(C,1) > 0 
 	&& ROC(O,1) > 0 
 	&& ROC(H,1) > 0 
-	&& ROC(L,1) > 0; // ignore open for 2yr bonds
+	&& ROC(L,1) > 0; 
 
-zv = zscore( StDev( ROC(C,1), lookback), lookback);
-volatility_filter = abs(zv) < 1;
 up_trend = C >= MA(C,lookback);
 
-Buy = volatility_filter &&  volume_filter && volatility_filter && up_today && up_trend;
+Buy = volatility_filter &&
+  volume_filter && 
+  up_today && 
+  up_trend;
+  
 Short = Cover = Sell = False;

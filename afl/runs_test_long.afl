@@ -3,12 +3,12 @@
 #include <z_score.afl>
 #include <volatility_filter.afl>
 
-
 autocorrelation = ComputeRunZ(ROC(C,1), lookback);
 acr = autocorrelation * ROC(C,lookback);
 
-Buy = volatility_filter &&  volume_filter 
-	&& volatility_filter 
-	&& acr >= HHV(acr,lookback) 
-	&& ROC(acr,lookback) > 0 ;
+Buy = volatility_filter &&  
+	volume_filter && 
+	acr >= HHV(acr,lookback) &&
+	ROC(acr,lookback) > 0 ;
+
 Short = Sell = Cover = False;
