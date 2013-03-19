@@ -1,7 +1,7 @@
 require './gen_strat.rb'
 
 def gen_new_strat(market)
-  base_strats = %w[ CH_L MA_L MO_L RT_CTL RT_L TR_L VL_L VLZ_L ZS_CTL ]
+  base_strats = %w[ CH_L MA_L MO_L RT_CTL RT_L TR_L SP_L SP_CTL ZS_CTL ]
   existing_strats = `ls #{market}_*.apx`.split("\n").
     map {|_| _.gsub /(#{market}_|\.apx)/,'' }
   

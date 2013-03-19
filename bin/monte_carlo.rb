@@ -3,13 +3,12 @@ require 'statsample'
 
 @trades = YAML.load_file("./data/wfa_trades.yml").
   map {|strategy, _| _ }.flatten
-  # map {|_| (( _ > 40) ? 40 : _ ).to_f }.
-  # map {|_| (( _ < -40) ? -40 : _ ).to_f }
   
+lookback = 10
 # systems to trade selected from xbar chart
 xbar = 1.0
 trades = @trades.each_with_index.find_all do |t,i|
-  roll = i < 10 ? i : 10
+  roll = i < lookback ? i : lookback
   sample = @trades[i-roll...i].to_scale
   (sample.mean/sample.sd) >= xbar
 end.map &:first

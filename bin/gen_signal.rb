@@ -1,6 +1,8 @@
 afl = '
 #include "C:\Program Files\AmiBroker\Formulas\Systems\STRATEGY_AFL.afl"
 
+Buy = Buy && VOLATILITY_FILTER ;
+
 // Optimisations from WFA
 
 AddTextColumn("BUY", "Entry" );
@@ -176,24 +178,40 @@ project = '
 '
 
 strategies = {
-  MO_L:'momentum_long',
-  TR_L:'trend_long',
-  RT_CTL:'runs_test_CT_long',
-  VL_L:'volatility_long',
-  ZS_CTL:'zscore_CT_long',
-  RT_L:'runs_test_long',
-  VLZ_L:'volatility_Z_long',
+  CH_L:'channel_long',
+  CH_CTL:'channel_CT_long'
   MA_L:'kma_long',
-  CH_L:'channel_long'
+  MO_L:'momentum_long',
+  OS_L:'oscillator_long',
+  OS_CTL:'oscillator_CT_long',
+  RT_CTL:'runs_test_CT_long',
+  RT_L:'runs_test_long',
+  SP_L:'spread_long',
+  SP_CTL:'spread_CT_long',
+  TR_CTL:'trend_CT_long',
+  TR_L:'trend_long',
+  ZS_CTL:'zscore_long',
+  ZS_L:'zscore_CT_long',
 }
-# Create files
 
+# Create files for each strategy & volatility bound
 strategies.each do |id,strategy_afl_location|
-  afl_code = afl.gsub /STRATEGY_AFL/, strategy_afl_location
-  project_code = project.gsub /PROJECT_AFL/, id.to_s
-  afl_file = id.to_s + '.afl'
-  project_file = id.to_s + '.apx'
+  volatility_filters = { 
+    VH:'high_volatility_filter',
+    VL:'low_volatility_filter',
+    VN:'volatility_filter',
+    VHL:'high_low_volatility_filter'
+  }
   
-  File.open(afl_file,'w') {|_| _.puts afl_code }
-  File.open(project_file,'w') {|_| _.puts project_code }
+  volatility_filters.each do |code,filter|
+    afl_code = afl.gsub /STRATEGY_AFL/, strategy_afl_location
+    project_code = project.gsub(/PROJECT_AFL/, id.to_s).
+       .gsub /VOLATILITY_FILTER/, volatility_bound
+    
+    afl_file = id.to_s + '.afl'
+    project_file = id.to_s + '.apx'
+    
+    File.open(afl_file,'w') {|_| _.puts afl_code }
+    File.open(project_file,'w') {|_| _.puts project_code }
+  end
 end
