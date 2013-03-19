@@ -196,22 +196,12 @@ strategies = {
 
 # Create files for each strategy & volatility bound
 strategies.each do |id,strategy_afl_location|
-  volatility_filters = { 
-    VH:'high_volatility_filter',
-    VL:'low_volatility_filter',
-    VN:'volatility_filter',
-    VHL:'high_low_volatility_filter'
-  }
+  afl_code = afl.gsub /STRATEGY_AFL/, strategy_afl_location
+  project_code = project.gsub(/PROJECT_AFL/, id.to_s)
   
-  volatility_filters.each do |code,filter|
-    afl_code = afl.gsub /STRATEGY_AFL/, strategy_afl_location
-    project_code = project.gsub(/PROJECT_AFL/, id.to_s).
-       .gsub /VOLATILITY_FILTER/, volatility_bound
-    
-    afl_file = id.to_s + '.afl'
-    project_file = id.to_s + '.apx'
-    
-    File.open(afl_file,'w') {|_| _.puts afl_code }
-    File.open(project_file,'w') {|_| _.puts project_code }
-  end
+  afl_file = id.to_s + '.afl'
+  project_file = id.to_s + '.apx'
+  
+  File.open(afl_file,'w') {|_| _.puts afl_code }
+  File.open(project_file,'w') {|_| _.puts project_code }
 end
