@@ -1,5 +1,5 @@
 afl = '
-#include "C:\Program Files\AmiBroker\Formulas\Systems\STRATEGY_AFL.afl"
+#include "C:\\Program Files\\AmiBroker\\Formulas\\Systems\\STRATEGY_AFL.afl"
 
 Buy = Buy && VOLATILITY_FILTER ;
 

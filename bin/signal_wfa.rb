@@ -13,7 +13,4 @@ def export_signals(basename)
   wfa.Close
 end
 
-Dir["*.apx"].
-  map {|_| _.gsub /\.apx/, '' }.
-  find_all {|_| _ !~ /^(ED|SS|SB|EI)_/ }.
-  flatten.each {|_| export_signals _ }
+Dir["*.apx"].map {|_| _.gsub /\.apx/, '' }.flatten.each {|_| export_signals _ }

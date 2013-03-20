@@ -28,19 +28,21 @@ end
 def gen_afl(strategy, market)
   volatility_filters.each do |code,filter|
     afl = File.read [strategy, code].join('_') + '.afl'
-    afl.gsub! /VOLATILITY_FILTER/, filter
+    afl.gsub!(/VOLATILITY_FILTER/, filter)
     File.open( afl_filename(market, strategy, code), 'wb' ) {|_| _.puts afl }
   end
 end
 
 def project_content(market, strategy, code)
+  formula_content = '<FormulaContent>' + afl_content(market, strategy, code) + '</FormulaContent>'
+  formula_content.gsub! "\\", "\\\\\\\\"
+  
   base_project_content(strategy, code).
     gsub!(/<WatchListID>76<\/WatchListID>/,
       "<WatchListID>#{WATCH_LIST[market.to_sym]}</WatchListID>").
-    gsub!(/FORMULA_CONTENT/, 
-      "<FormulaContent>#{afl_content(market, strategy, code)}</FormulaContent>").
-    gsub!(/<FormulaPath>.*<\/FormulaPath>/,
-      "<FormulaPath>Formulas\\Signals\\#{afl_filename(market, strategy, code)}</FormulaPath>")
+    gsub!(/FORMULA_CONTENT/, formula_content).
+    gsub! /<FormulaPath>.*<\/FormulaPath>/,
+      "<FormulaPath>Formulas\\\\\\Signals\\\\\\#{afl_filename(market, strategy, code)}</FormulaPath>"
 end
 
 def afl_content(market, strategy, code)
@@ -48,7 +50,8 @@ def afl_content(market, strategy, code)
     gsub!(/&/,'&amp;').
     gsub!(/\</,'&lt;').
     gsub!(/\>/,'&gt;').
-    gsub(/\n/, '\r\n')
+    gsub!("\\", "\\\\\\\\").
+    gsub!(/\n/, '\r\n')
 end
 
 def gen_project(strategy,market)
