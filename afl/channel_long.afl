@@ -2,8 +2,7 @@
 #include <z_score.afl>
 #include <volatility_filter.afl>
 
-Buy = volatility_filter && 
-	volume_filter && 
+Buy = 	volume_filter && 
   C >= HHV(C,lookback);
 
 Short = Sell = Cover = False;

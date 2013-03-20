@@ -9,8 +9,7 @@ down_today = ROC(C,1) < 0
 
 down_trend = C <= MA(C,lookback);
 
-Buy = high_volatility_filter &&
-  volume_filter && 
+Buy =   volume_filter && 
   down_today && 
   down_trend;
   

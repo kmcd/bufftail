@@ -9,8 +9,7 @@ up_today = ROC(C,1) > 0
 
 up_trend = C >= MA(C,lookback);
 
-Buy = volatility_filter &&
-  volume_filter && 
+Buy =   volume_filter && 
   up_today && 
   up_trend;
   

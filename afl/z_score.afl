@@ -9,8 +9,7 @@ PositionSize = MarginDeposit;
 z_threshold = Optimize("th", -1.9, -2.0, 0, 0.1);
 zz = zscore(O,10);
 
-Buy = volatility_filter &&  Cross(zz, z_threshold) && Ref(zz,-1) < z_threshold;
-Short = Cover = Sell = False;
+Buy = Short = Cover = Sell = False;
 
 ApplyStop(stopTypeProfit, stopModePoint, TickSize * 4);
 ApplyStop(stopTypeLoss, stopModePoint, TickSize * 2, 0);

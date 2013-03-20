@@ -4,8 +4,7 @@
 
 zz = zscore(ROC(C,1),lookback) ;
 
-Buy = high_low_volatility_filter &&
-	volume_filter && 
+Buy = 	volume_filter && 
 	Cross( zz, 1 );
 
 Short = Sell = Cover = False;

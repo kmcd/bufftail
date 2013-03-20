@@ -4,8 +4,7 @@
 
 momentum = LinRegSlope(ROC(C/O,lookback),lookback);
 
-Buy = volatility_filter &&
-	volume_filter && 
+Buy = 	volume_filter && 
 	Cross( momentum, 0 ) ;
 
 Sell = Short = Cover = False;

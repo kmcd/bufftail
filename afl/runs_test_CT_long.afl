@@ -6,8 +6,7 @@
 autocorrelation = ComputeRunZ(ROC(C,1), lookback);
 acr = autocorrelation * -ROC(C,lookback); 
 
-Buy =  high_volatility_filter && 
-  volume_filter &&
+Buy =   volume_filter &&
   Cross( zscore(acr,lookback),  -1);
   
 Short = Sell = Cover = False;

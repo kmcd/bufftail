@@ -2,5 +2,4 @@
 #include <z_score.afl>
 #include <volatility_filter.afl>
 
-Buy = high_volatility_filter && volume_filter && C <= LLV(C,lookback);
-Short = Sell = Cover = False;
+Buy = Short = Sell = Cover = False;

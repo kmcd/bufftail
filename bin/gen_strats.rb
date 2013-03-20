@@ -1,20 +1,16 @@
 require './gen_strat.rb'
 
+def base_strats
+  %w[ CH_L CH_CTL MA_L MO_L OS_L OS_CTL RT_CTL RT_L SP_L SP_CTL TR_CTL TR_L ZS_CTL 
+    ZS_L ]
+end
+
 def gen_new_strat(market)
-  base_strats = %w[ CH_L MA_L MO_L RT_CTL RT_L TR_L SP_L SP_CTL ZS_CTL ]
-  existing_strats = `ls #{market}_*.apx`.split("\n").
-    map {|_| _.gsub /(#{market}_|\.apx)/,'' }
-  
-  if existing_strats.empty?
-    base_strats.each {|_| gen_strat _, market }
-  else
-    s = [ base_strats, existing_strats ].flatten.sort
-    new_stats = s.find_all {|_| s.count(_)  == 1 && base_strats.include?(_) }
-    new_stats.each {|_| gen_strat _, market }
-  end
+  base_strats.each {|_| gen_strat _, market }
 end
 
 # USAGE: gen_strats.rb MARKET
-unless ARGV.empty?
-  ARGV.each {|_| gen_new_strat _.upcase }
-end
+(ARGV.empty? ? %w[ ED EI SS SB ] : ARGV).each {|_| gen_new_strat _.upcase }
+
+# Remove base strats
+base_strats.each {|_| `rm #{_}*.a{fl,px}` }

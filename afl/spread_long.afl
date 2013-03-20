@@ -5,8 +5,7 @@
 spread = ParamStr("spread","@TU#C");
 spread_z = zscore(RelStrength(spread),lookback);
 
-Buy = volatility_filter &&
-  volume_filter && 
+Buy =   volume_filter && 
   Cross(spread_z,1);
   
 Short = Sell = Cover = False;

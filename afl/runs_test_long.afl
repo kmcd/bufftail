@@ -6,8 +6,7 @@
 autocorrelation = ComputeRunZ(ROC(C,1), lookback);
 acr = autocorrelation * ROC(C,lookback);
 
-Buy = volatility_filter &&  
-	volume_filter && 
+Buy = 	volume_filter && 
 	acr >= HHV(acr,lookback) &&
 	ROC(acr,lookback) > 0 ;
 
