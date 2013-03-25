@@ -1,66 +1,78 @@
 require 'yaml'
 require 'statsample'
 
-@trades = YAML.load_file("./data/wfa_trades.yml").
+@total_trades = YAML.load_file("./data/wfa_trades.yml").
   map {|strategy, _| _ }.flatten
   
 lookback = 10
-# systems to trade selected from xbar chart
 xbar = 1.0
-trades = @trades.each_with_index.find_all do |t,i|
+
+# FIXME: 1st 10 trades may be below xbar, use extract trades instead
+trades_xbar = @total_trades.each_with_index.map do |t,i|
   roll = i < lookback ? i : lookback
-  sample = @trades[i-roll...i].to_scale
-  (sample.mean/sample.sd) >= xbar
-end.map &:first
+  sample = @total_trades[i-roll...i].to_scale
+  trade_xbar = sample.mean/sample.sd
+  [t,trade_xbar]
+end.find_all {|_,xb| xb >= xbar }
 
-# Return
-puts "= Position sizer"
-puts "= Total trades: " + @trades.size.to_s
-puts "= Trades (xbar #{xbar}): " + trades.size.to_s
+trades = trades_xbar.map &:first
 
-account_risk = 0.15
+def report(description="",message="")
+  puts [ "= #{description}".ljust(20), message.to_s ].join ' '
+end
+
+def accuracy(trades)
+  (trades.count {|_| _ > 0 } / trades.size.to_f).round(2)
+end
+
 losing_trades = trades.find_all {|_| _ < 0 }.to_scale
-max_loss = losing_trades.min.abs
-loss_95 = losing_trades.mean.abs+(losing_trades.sd*2)
-risk = 200
+MAX_LOSS = losing_trades.min.abs
+SD = losing_trades.sd
+LOSS_PERCENTILE = losing_trades.mean.abs+(SD*1.65)
 trades_per_year = 150
 account = 10_000
 
-# Return
-tw = 500.times.map do
+def account_risk(trade_xbar=1.0)
+  0.1
+end
+
+def trade_risk(trade_xbar=1.0)
+  LOSS_PERCENTILE
+end
+
+fixed_return = trades.size.times.map do
   trades.shuffle[0..trades_per_year].flatten.reduce &:'+'
 end.to_scale
 
-# Draw down
-dd = 500.times.map do
-  st = trades.shuffle[0..trades_per_year]
-  st.each_with_index.map {|ar,i| ar - st[0..i].max }.min
+fixed_drawdown = trades.size.times.map do
+  shuffled_trades = trades.shuffle[0..trades_per_year]
+  shuffled_trades.each_with_index.map do |trade,index|
+    ((trade - shuffled_trades[0..index].max) / shuffled_trades[0..index].max) / 100
+  end.min
 end.to_scale
 
-tw95 = (tw.mean - (tw.sd * 2)) / account
-dd95 = ( (dd.mean.abs + dd.sd * 2) / account )
+consecutive_losses = trades.size.times.map do
+  trades.shuffle.chunk {|_| _ < 0 }.to_a.
+    map {|loss| loss.last.size if loss.first }.compact.max
+end.to_scale
 
-puts
-puts "= Fixed size"
-puts "= TW95 return:    " + tw95.round(3).to_s
-puts "= DD95 drawdown:  " + dd95.round(3).abs.to_s
-puts "= TW95/DD95:      " + (tw95/dd95).round(3).abs.to_s
+max_consecutive_losses = (consecutive_losses.mean * (consecutive_losses.sd * 1.65)).to_i
 
 tw = trades.size.times.map do
-  st = trades.shuffle[0..trades_per_year].flatten
+  st = trades_xbar.shuffle[0..trades_per_year]
   balance = account
-  st.each do |trade|
-    contracts = ((balance * account_risk) / risk).round
+  st.each do |trade,trade_xbar|
+    contracts = ((balance * account_risk()) / trade_risk(trade_xbar)).round
     balance += (trade * contracts)
   end
   balance - account
 end.to_scale
 
 dd = trades.size.times.map do
-  st = trades.shuffle[0..trades_per_year].flatten
+  st = trades_xbar.shuffle[0..trades_per_year]
   balance = account
-  compounded_trades = st.map do |trade|
-    contracts = ((balance * account_risk) / risk).round
+  compounded_trades = st.map do |trade,trade_xbar|
+    contracts = ((balance * account_risk()) / trade_risk(trade_xbar)).round
     balance += (trade * contracts)
   end
   compounded_trades.each_with_index.map do |trade,i| 
@@ -68,23 +80,33 @@ dd = trades.size.times.map do
   end.min
 end.to_scale
 
+fr95 = (fixed_return.mean - (fixed_return.sd * 1.64)) / account
+dd95 = ( (fixed_drawdown.mean.abs + fixed_drawdown.sd * 1.64) )
 tw95 = (tw.mean - (tw.sd * 1.64)) / account
 dd95 = ( (dd.mean.abs + dd.sd * 1.64) )
 tw50 = tw.mean / account
 dd50 = dd.mean.abs
 
-puts
-puts "= Fixed fraction"
-puts "= a/c risk: #{account_risk}, trade risk: #{risk.to_i}"
+report "Position sizer"
+report "Total trades ",          @total_trades.size
+report "Trades (xbar #{xbar}) ", trades.size
+report "Accuracy ",              accuracy(trades)
+report "Max losses",             max_consecutive_losses
 
 puts
-puts "= 95%"
-puts "= TW return:    " + tw95.round(3).to_s
-puts "= DD drawdown:  " + dd95.round(3).abs.to_s
-puts "= TW/DD:        " + (tw95/dd95).round(3).abs.to_s
+report "Fixed size"
+report "TW95 return    ", fr95.round(3)
+report "DD95 drawdown  ", dd95.round(3)
+report "TW95/DD95      ", (fr95 / dd95 ).round(3).abs
 
 puts
-puts "= 50%"
-puts "= TW return:    " + tw50.round(3).to_s
-puts "= DD drawdown:  " + dd50.round(3).abs.to_s
-puts "= TW/DD:        " + (tw50/dd50).round(3).abs.to_s
+report "a/c risk #{account_risk.round(2)}, trade risk: #{trade_risk.to_i} @ 95%"
+report "TW return    ", tw95.round(3)
+report "DD drawdown  ", dd95.round(3).abs
+report "TW/DD        ", (tw95/dd95).round(3).abs
+
+puts
+report "a/c risk #{account_risk.round(2)}, trade risk: #{trade_risk.to_i} @ 50%"
+report "TW return    ", tw50.round(3)
+report "DD drawdown  ", dd50.round(3).abs
+report "TW/DD        ", (tw50/dd50).round(3).abs

@@ -5,6 +5,6 @@
 zz = zscore(ROC(C,1),lookback) ;
 
 Buy = 	volume_filter && 
-	Cross( zz, 1 );
+	Cross( zz, Optimize("ze",-1,1,2,0.1) );
 
 Short = Sell = Cover = False;

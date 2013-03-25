@@ -3,6 +3,6 @@
 #include <volatility_filter.afl>
 
 Buy = 	volume_filter && 
-  C >= HHV(C,lookback);
+  C >= HHV(C,Optimize("lb",2,2,10,10));
 
 Short = Sell = Cover = False;

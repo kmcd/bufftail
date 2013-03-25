@@ -3,6 +3,8 @@
 #include <z_score.afl>
 #include <volatility_filter.afl>
 
+lookback = Optimize("lb",2,2,10,10);
+
 autocorrelation = ComputeRunZ(ROC(C,1), lookback);
 acr = autocorrelation * ROC(C,lookback);
 

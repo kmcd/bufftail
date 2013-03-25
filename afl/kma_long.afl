@@ -3,5 +3,5 @@
 #include <volatility_filter.afl>
 
 Buy = 	volume_filter && 
-	Cross( C, MA(C,lookback) );
+	Cross( C, MA(C,Optimize("lb",2,2,10,10)));
 Short = Sell = Cover = False;

@@ -2,17 +2,20 @@
 #include <z_score.afl>
 #include <volatility_filter.afl>
 
-switch(NAME()){
-case StrFind( Name(), "ED" )  : spread = '@TU#C' ; break;
-case StrFind( Name(), "EI" )  : spread = 'EZ#C' ; break;
-case StrFind( Name(), "SS" )  : spread = 'G#C' ; break;
-case StrFind( Name(), "TU" )  : spread = '@FV#C' ; break;
-case StrFind( Name(), "EZ" )  : spread = 'BL#C' ; break;
+spread = "";
+
+switch( StrLeft( Name(), 2) ) {
+case "@E" : spread = "@TU#C"  ; break;
+case "IE" : spread = "EZ#C"   ; break;
+case "LL" : spread = "G#C"    ; break;
+case "@T" : spread = "@FV#C"  ; break;
+case "EZ" : spread = "BL#C"   ; break;
+case "G#" : spread = "G#C"    ; break;
 }
 
 spread_z = zscore(RelStrength(spread),lookback);
 
 Buy =   volume_filter && 
-  Cross(spread_z,1);
+  Cross(spread_z,Optimize("ze",-1,1,2,0.1));
   
 Short = Sell = Cover = False;

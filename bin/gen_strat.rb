@@ -2,11 +2,13 @@ WATCH_LIST = {
   ED:64,
   SB:65,
   EI:68,
-  SS:77
+  SS:77,
+  ALL:76
 }
 
 def volatility_filters
-  { VN:'volatility_filter', VHL:'high_low_volatility_filter' }
+  # { VN:'volatility_filter', VHL:'high_low_volatility_filter' }
+  { VA:'True'}
 end
 
 def strat_filename(market, strategy, code)

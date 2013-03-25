@@ -180,24 +180,19 @@ FORMULA_CONTENT
 
 strategies = {
   CH_L:'channel_long',
-  CH_CTL:'channel_CT_long',
   MA_L:'kma_long',
   MO_L:'momentum_long',
   OS_L:'oscillator_long',
-  OS_CTL:'oscillator_CT_long',
-  RT_CTL:'runs_test_CT_long',
   RT_L:'runs_test_long',
   SP_L:'spread_long',
-  SP_CTL:'spread_CT_long',
-  TR_CTL:'trend_CT_long',
   TR_L:'trend_long',
-  ZS_CTL:'zscore_long',
-  ZS_L:'zscore_CT_long',
+  ZS_L:'zscore_long'
 }
 
 volatility_filters = { 
-  VN:'volatility_filter',
-  VHL:'high_low_volatility_filter'
+  # VN:'volatility_filter',
+  # VHL:'high_low_volatility_filter'
+  VA:'True'
 }
 
 # Create files for each strategy & volatility bound
