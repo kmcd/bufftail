@@ -1,0 +1,6 @@
+zv = zscore( StDev( abs(ROC(C,1)), 10), 10);
+
+volatility_filter = abs(zv) < 1;
+low_volatility_filter = zv < -1;
+high_volatility_filter = zv > 1;
+high_low_volatility_filter = abs(zv) >= 1;

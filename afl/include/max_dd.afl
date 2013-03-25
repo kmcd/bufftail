@@ -1,0 +1,8 @@
+EQ = Foreign("~~~OSEQUITY", "C");
+MaxEQ = Highest( EQ );
+DD = 100 * ( Eq - MaxEQ ) / MaxEq; 
+MaxDD = abs(Lowest( DD ));
+
+function max_dd() {
+	return IIf( !IsEmpty(EQ), MaxDD < 5, True) ;
+}

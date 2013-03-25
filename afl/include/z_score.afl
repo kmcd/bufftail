@@ -1,0 +1,6 @@
+function zscore(price,Length) {
+	av = MA(price,Length); 
+	st = StDev(price,Length); 
+	zs = (price - av) / st; 
+	return zs;
+}

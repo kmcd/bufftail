@@ -1,0 +1,8 @@
+Filter = (Buy || Short); 
+SetSortColumns( -4 );
+AddColumn( PositionScore, "PositionScore", 1.3 );
+AddColumn( C, "entry price", 1.4 );
+AddColumn( C + pt, "exit price", 1.4 );
+AddColumn( C - sl, "stop loss", 1.4 );
+AddColumn( pt * PointValue, "profit target $", 1.4 );
+AddColumn( sl * PointValue,  "stop loss $", 1.4 );

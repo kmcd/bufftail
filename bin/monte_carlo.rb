@@ -17,6 +17,12 @@ end.find_all {|_,xb| xb >= xbar }
 
 trades = trades_xbar.map &:first
 
+losing_trades = trades.find_all {|_| _ < 0 }.to_scale
+MAX_LOSS = losing_trades.min.abs
+LOSS_PERCENTILE = losing_trades.mean.abs+(losing_trades.sd*1.65)
+trades_per_year = 160
+account = 10_000
+
 def report(description="",message="")
   puts [ "= #{description}".ljust(20), message.to_s ].join ' '
 end
@@ -24,13 +30,6 @@ end
 def accuracy(trades)
   (trades.count {|_| _ > 0 } / trades.size.to_f).round(2)
 end
-
-losing_trades = trades.find_all {|_| _ < 0 }.to_scale
-MAX_LOSS = losing_trades.min.abs
-SD = losing_trades.sd
-LOSS_PERCENTILE = losing_trades.mean.abs+(SD*1.65)
-trades_per_year = 150
-account = 10_000
 
 def account_risk(trade_xbar=1.0)
   0.1
@@ -90,7 +89,7 @@ dd50 = dd.mean.abs
 report "Position sizer"
 report "Total trades ",          @total_trades.size
 report "Trades (xbar #{xbar}) ", trades.size
-report "Accuracy ",              accuracy(trades)
+report "Accuracy %",             accuracy(trades) * 100
 report "Max losses",             max_consecutive_losses
 
 puts

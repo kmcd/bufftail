@@ -1,0 +1,39 @@
+function spec(str,value_1,value_2) {
+	return IIf(StrFind(Name(),str) , value_1, value_2);
+}
+
+if( StrFind(Name(), "@ED") ) {
+	TickSize = 0.005;
+	PointValue = 2500;
+	MarginDeposit = spec("-@ED" , 135, 500); // median of 13: 400, 16:600
+}
+
+if( StrFind(Name(), "IE") ) {
+	TickSize = 0.005;
+	PointValue = 2500;
+	MarginDeposit = spec("-IE" , 150, 407);
+}
+
+if( StrFind(Name(), "LL") ) {
+	TickSize = 0.01;
+	PointValue = 2000;
+	MarginDeposit = spec("-LL" , 175, 329);
+}
+
+OptimizerSetEngine("cmae");
+SetOption("FuturesMode", True );
+
+PositionScore = MA(V,10);
+RoundLotSize = 1;
+PositionSize = MarginDeposit;
+lookback = 10;
+volume_filter = MA(V,lookback) > 10000;
+risk = MarginDeposit/(PointValue*TickSize);
+
+hp = Optimize("hp",1,2,4,1);
+pt = Optimize("pt",0.01,0.01,0.05,0.01);
+sl = risk * TickSize; 
+
+ApplyStop(stopTypeNBar, stopModeBars, hp, 0);
+ApplyStop(stopTypeProfit, stopModePercent, pt, 1);
+ApplyStop(stopTypeLoss, stopModePoint, sl, 1);

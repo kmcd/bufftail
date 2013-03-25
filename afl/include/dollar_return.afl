@@ -1,0 +1,3 @@
+dollar_tick = (TickSize * PointValue);
+threshold = MarginDeposit*0.5;
+dollar_return = ((C - Ref(C, -1)) / TickSize) * dollar_tick;

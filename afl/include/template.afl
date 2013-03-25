@@ -1,0 +1,14 @@
+OptimizerSetEngine("cmae");
+SetOption("PriceBoundChecking", True);
+
+RoundLotSize = 1;
+PositionSize = MarginDeposit;
+lookback = 10 ;
+margin = (MarginDeposit/(TickSize*PointValue));
+sl = margin * TickSize;
+
+pt = Optimize("pt", 2, 2, margin/2, 2) * TickSize;
+
+ApplyStop(stopTypeProfit, stopModePoint, pt, 1);
+ApplyStop(stopTypeNBar, stopModeBars, 3, 0);
+ApplyStop(stopTypeLoss, stopModePoint, sl, 1);
