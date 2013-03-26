@@ -99,13 +99,13 @@ report "DD95 drawdown  ", dd95.round(3)
 report "TW95/DD95      ", (fr95 / dd95 ).round(3).abs
 
 puts
-report "(95%) a/c risk #{account_risk.round(3)}, trade risk: #{trade_risk.to_i}"
+report "(50%) a/c risk #{account_risk.round(3)}, trade risk: #{trade_risk.to_i}"
 report "TW return    ", tw95.round(3)
 report "DD drawdown  ", dd95.round(3).abs
 report "TW/DD        ", (tw95/dd95).round(3).abs
 
 puts
-report "(50%) a/c risk #{account_risk.round(3)}, trade risk: #{trade_risk.to_i}"
+report "(95%) a/c risk #{account_risk.round(3)}, trade risk: #{trade_risk.to_i}"
 report "TW return    ", tw50.round(3)
 report "DD drawdown  ", dd50.round(3).abs
 report "TW/DD        ", (tw50/dd50).round(3).abs
