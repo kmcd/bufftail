@@ -39,7 +39,7 @@ def gen_afl(strategy, market)
   volatility_filters.each do |code,filter|
     afl = File.read [strategy, code].join('_') + '.afl'
     afl.gsub!(/VOLATILITY_FILTER/, filter)
-    afl.gsub!(/CONTRACT_SPEC/, CONTRACT_SPEC[market])
+    afl.gsub!(/CONTRACT_SPEC/, CONTRACT_SPEC[market.to_sym])
     File.open( afl_filename(market, strategy, code), 'wb' ) {|_| _.puts afl }
   end
 end
