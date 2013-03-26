@@ -1,6 +1,7 @@
 require 'nokogiri'
 require 'open-uri'
 require 'YAML'
+require 'active_support/all'
 
 today = Time.now.to_s.gsub(/\D/, '')[0...8]
 `rm -Rf ./tmp/*ample*`
@@ -11,7 +12,6 @@ trades = todays_reports.split("\n").uniq {|_| _[/[A-Z]+_[A-Z]+_*[A-Z]*/] }.sort.
   strategy = report[/[A-Z]+_[A-Z]+_*[A-Z]*/]
   doc = Nokogiri::HTML open(report)
   trades = doc.css('table tr td:nth-child(6)').map {|_| _.to_s[/-*\d+\.\d+/].to_f }
-  
   [strategy, trades]
 end
 
