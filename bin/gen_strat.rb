@@ -6,6 +6,14 @@ WATCH_LIST = {
   ALL:76
 }
 
+CONTRACT_SPEC = {
+  ED:   'TickSize = 0.005; PointValue = 2500; MarginDeposit = 400;',
+  SB:   '// Schatz & 2 year note should be specified in info window',
+  EI:   'TickSize = 0.005; PointValue = 2500; MarginDeposit = 400;',
+  SS:   'TickSize = 0.01;  PointValue = 2000; MarginDeposit = 400;',
+  ALL:  'TickSize = 0.005; PointValue = 2500; MarginDeposit = 400;'
+}                                                                                       
+
 def volatility_filters
   # { VN:'volatility_filter', VHL:'high_low_volatility_filter' }
   { VA:'True'}
@@ -31,6 +39,7 @@ def gen_afl(strategy, market)
   volatility_filters.each do |code,filter|
     afl = File.read [strategy, code].join('_') + '.afl'
     afl.gsub!(/VOLATILITY_FILTER/, filter)
+    afl.gsub!(/CONTRACT_SPEC/, CONTRACT_SPEC[market])
     File.open( afl_filename(market, strategy, code), 'wb' ) {|_| _.puts afl }
   end
 end
