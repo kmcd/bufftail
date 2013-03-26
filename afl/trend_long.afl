@@ -1,6 +1,7 @@
-
 #include <z_score.afl>
 #include <volatility_filter.afl>
+
+lookback = Optimize("lb",2,2,10,10);
 
 up_today = ROC(C,1) > 0 
 	&& ROC(O,1) > 0 

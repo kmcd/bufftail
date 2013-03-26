@@ -12,12 +12,12 @@ lookback = 10;
 volume_filter = MA(V,lookback) > 10000;
 risk = MarginDeposit/(PointValue*TickSize);
 
-hp = Optimize("hp",1,1,1,1);
-pt = TickSize * Optimize("pt",2,2,8,2);
+hp = Optimize("hp",1,1,3,1);
+pt = Prec( TickSize * Optimize("pt",2,2,8,2), 3 );
 sl = risk * TickSize; 
 
 ApplyStop(stopTypeNBar, stopModeBars, hp, 0);
-ApplyStop(stopTypeProfit, stopModePoint, Prec(pt,3), 1);
+ApplyStop(stopTypeProfit, stopModePoint, pt, 1);
 ApplyStop(stopTypeLoss, stopModePoint, 1, 1);
 
 #include "C:\\Program Files\\AmiBroker\\Formulas\\Systems\\STRATEGY_AFL.afl"
