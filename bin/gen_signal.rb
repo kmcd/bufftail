@@ -203,8 +203,6 @@ strategies = {
   CH_L:'channel_long',
   MA_L:'kma_long',
   MO_L:'momentum_long',
-  OS_L:'oscillator_long',
-  RT_L:'runs_test_long',
   SP_L:'spread_long',
   TR_L:'trend_long',
   ZS_L:'zscore_long'
