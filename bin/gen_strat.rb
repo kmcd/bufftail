@@ -12,10 +12,9 @@ CONTRACT_SPEC = {
   EI:   'TickSize = 0.005; PointValue = 2500; MarginDeposit = 400;',
   SS:   'TickSize = 0.01;  PointValue = 2000; MarginDeposit = 400;',
   ALL:  'TickSize = 0.005; PointValue = 2500; MarginDeposit = 400;'
-}                                                                                       
+}
 
 def volatility_filters
-  # { VN:'volatility_filter', VHL:'high_low_volatility_filter' }
   { VA:'True'}
 end
 

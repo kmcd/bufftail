@@ -209,8 +209,6 @@ strategies = {
 }
 
 volatility_filters = { 
-  # VN:'volatility_filter',
-  # VHL:'high_low_volatility_filter'
   VA:'True'
 }
 
