@@ -22,8 +22,6 @@ ApplyStop(stopTypeLoss, stopModePoint, 1, 1);
 
 #include "C:\\Program Files\\AmiBroker\\Formulas\\Systems\\STRATEGY_AFL.afl"
 
-Buy = Buy && VOLATILITY_FILTER ;
-
 // Optimisations from WFA
 
 AddTextColumn("BUY", "Entry" );
@@ -208,24 +206,17 @@ strategies = {
   ZS_L:'zscore_long'
 }
 
-volatility_filters = { 
-  VA:'True'
-}
-
 # Create files for each strategy & volatility bound
-volatility_filters.each do |volatility_code,filter|
-  strategies.each do |id,strategy_afl_location|
-    afl_code = afl.
-      gsub(/STRATEGY_AFL/, strategy_afl_location).
-      gsub(/FORMULA_CONTENT/, afl.gsub(/\n/, "\r\n")).
-      gsub /VOLATILITY_FILTER/, filter
-    
-    project_code = project.gsub(/PROJECT_AFL/, id.to_s)
-    file_name = [id.to_s,volatility_code].join('_')
-    afl_file = file_name + '.afl'
-    project_file = file_name + '.apx'
-    
-    File.open(afl_file,'w') {|_| _.puts afl_code }
-    File.open(project_file,'w') {|_| _.puts project_code }
-  end
+strategies.each do |id,strategy_afl_location|
+  afl_code = afl.
+    gsub(/STRATEGY_AFL/, strategy_afl_location).
+    gsub(/FORMULA_CONTENT/, afl.gsub(/\n/, "\r\n")).
+  
+  project_code = project.gsub(/PROJECT_AFL/, id.to_s)
+  file_name = id.to_s
+  afl_file = file_name + '.afl'
+  project_file = file_name + '.apx'
+  
+  File.open(afl_file,'w') {|_| _.puts afl_code }
+  File.open(project_file,'w') {|_| _.puts project_code }
 end
