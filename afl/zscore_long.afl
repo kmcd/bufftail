@@ -1,5 +1,4 @@
 #include <z_score.afl>
-#include <volatility_filter.afl>
 
 zz = zscore(C,lookback) ;
 

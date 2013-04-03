@@ -1,7 +1,6 @@
 
 #include_once <runs_test_zscore.afl>
 #include <z_score.afl>
-#include <volatility_filter.afl>
 
 lookback = Optimize("lb",2,2,10,10);
 

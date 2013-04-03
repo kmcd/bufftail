@@ -1,6 +1,5 @@
 
 #include <z_score.afl>
-#include <volatility_filter.afl>
 
 Buy = 	volume_filter && 
 	Cross(RSI(lookback), Optimize("rsi",70,20,80,10));

@@ -1,5 +1,4 @@
 #include <z_score.afl>
-#include <volatility_filter.afl>
 
 Buy = 	volume_filter && 
   C >= HHV(C,Optimize("lb",2,2,10,10));
