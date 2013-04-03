@@ -1,7 +1,7 @@
 #include <z_score.afl>
 #include <volatility_filter.afl>
 
-zz = zscore(ROC(C,1),lookback) ;
+zz = zscore(C,lookback) ;
 
 Buy = 	volume_filter && 
 	Cross( zz, Optimize("ze",-1,1,2,0.1) );
