@@ -1,0 +1,14 @@
+entry = Cross( spread, MA(spread,Optimize("lb",1,1,10,10)) );
+entry = Cross( Optimize("ze",1,-2,1,0.2), zscore(spread,10) );
+entry = Cross( LinRegSlope(ROC(C,lookback),lookback), 0);
+entry = spread >= HHV( spread, lookback );
+
+#include <intraday_bond_spread.afl>
+#include <z_score.afl>
+
+spread = RelStrength("@ES#C");
+
+entry = spread >= HHV( spread, lookback );
+
+Buy = liquid_hours && entry ;
+Short = Sell = Cover = False;
