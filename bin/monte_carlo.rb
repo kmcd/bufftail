@@ -5,7 +5,7 @@ require 'statsample'
   map {|strategy, _| _ }.flatten
   
 lookback = 10
-xbar = 1.0
+xbar = 1.25
 
 # FIXME: 1st 10 trades may be below xbar, use extract trades instead
 trades_xbar = @total_trades.each_with_index.map do |t,i|
@@ -16,11 +16,13 @@ trades_xbar = @total_trades.each_with_index.map do |t,i|
 end.find_all {|_,xb| xb >= xbar }
 
 trades = trades_xbar.map &:first
+# trades.map! {|_| _ < -20 ? _.abs - 20 : _ }
 
 losing_trades = trades.find_all {|_| _ < 0 }.to_scale
 MAX_LOSS = losing_trades.min.abs
-LOSS_PERCENTILE = losing_trades.mean.abs+(losing_trades.sd*1.45)
-trades_per_year = 20*8
+LOSS_PERCENTILE = losing_trades.mean.abs+(losing_trades.sd*3)
+quarter_trading_days = 20*3*2
+trades_per_year = trades.size < quarter_trading_days ? trades.size : quarter_trading_days
 account = 10_000
 
 def report(description="",message="")
@@ -36,7 +38,9 @@ def account_risk(trade_xbar=1.0)
 end
 
 def trade_risk(trade_xbar=1.0)
-  LOSS_PERCENTILE
+  # 633
+  # 371
+  776
 end
 
 fixed_return = trades.size.times.map do
@@ -99,13 +103,13 @@ report "DD95 drawdown  ", dd95.round(3)
 report "TW95/DD95      ", (fr95 / dd95 ).round(3).abs
 
 puts
-report "(50%) a/c risk #{account_risk.round(3)}, trade risk: #{trade_risk.to_i}"
+report "(95%) a/c risk #{account_risk.round(3)}, trade risk: #{trade_risk.to_i}"
 report "TW return    ", tw95.round(3)
 report "DD drawdown  ", dd95.round(3).abs
 report "TW/DD        ", (tw95/dd95).round(3).abs
 
 puts
-report "(95%) a/c risk #{account_risk.round(3)}, trade risk: #{trade_risk.to_i}"
+report "(50%) a/c risk #{account_risk.round(3)}, trade risk: #{trade_risk.to_i}"
 report "TW return    ", tw50.round(3)
 report "DD drawdown  ", dd50.round(3).abs
 report "TW/DD        ", (tw50/dd50).round(3).abs

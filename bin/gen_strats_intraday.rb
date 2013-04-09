@@ -2,7 +2,7 @@
 <AmiBroker-Analysis CompactMode="0">
 <General>
 <FormatVersion>1</FormatVersion>
-<Symbol>BL#C</Symbol>
+<Symbol>@FV#C</Symbol>
 <FormulaPath>Formulas\\Signals\\PROJECT_AFL.afl</FormulaPath>
 FORMULA_CONTENT
 <ApplyTo>2</ApplyTo>
@@ -67,7 +67,7 @@ FORMULA_CONTENT
 <ReportSummary>1</ReportSummary>
 <ReportTradeList>1</ReportTradeList>
 <LoadRemainingQuotes>1</LoadRemainingQuotes>
-<Periodicity>0</Periodicity>
+<Periodicity>2</Periodicity>
 <InterestRate>0</InterestRate>
 <ReportOutPositions>1</ReportOutPositions>
 <UseConstantPriceArrays>0</UseConstantPriceArrays>
@@ -85,7 +85,7 @@ FORMULA_CONTENT
 <GroupID>-1</GroupID>
 <SectorID>-1</SectorID>
 <IndustryID>-1</IndustryID>
-<WatchListID>67</WatchListID>
+<WatchListID>WATCHLIST</WatchListID>
 <Favourite>0</Favourite>
 <Index>0</Index>
 <GICSID>-1</GICSID>
@@ -149,7 +149,7 @@ FORMULA_CONTENT
 <CustomBacktestProcFormulaPath>C:\Program Files\AmiBroker\Formulas\Custom\expectancy.afl</CustomBacktestProcFormulaPath>
 <MinPosValue>1</MinPosValue>
 <MaxPosValue>0</MaxPosValue>
-<ChartInterval>86400</ChartInterval>
+<ChartInterval>3600</ChartInterval>
 <DisableRuinStop>0</DisableRuinStop>
 <OptTarget>K-Ratio</OptTarget>
 <WFMode>1</WFMode>
@@ -166,11 +166,24 @@ FORMULA_CONTENT
 </AmiBroker-Analysis>
 '
 
+spread_strategies = {
+  'MA' => 'Cross( spread, MA(spread,lookback) )',
+  'MO' => 'Cross( LinRegSlope(ROC(spread,lookback),lookback), 0)',
+  'CH' => 'spread >= HHV( spread, lookback )',
+  'MACT' => 'Cross( MA(spread,lookback), spread )',
+  'MOCT' => 'Cross( 0, LinRegSlope(ROC(spread,lookback),lookback) )',
+  'CHCT' => 'spread <= LLV( spread, lookback )'
+}
+
 strategies = {
-  'MA' => 'Cross( spread, MA(spread,Optimize("lb",1,1,10,10)) )',
-  'ZS' => 'Cross( Optimize("ze",1,-2,1,0.2), zscore(spread,10) )',
-  'ZS' => 'Cross( LinRegSlope(ROC(C,lookback),lookback), 0)',
-  'CH' => 'spread >= HHV( spread, lookback )'
+  'MA' => 'Cross( C, MA(C,lookback) )',
+  'MO' => 'Cross( LinRegSlope(ROC(C,lookback),lookback), 0)',
+  'CH' => 'C >= HHV( C, lookback )',
+  'ZS' => 'Cross( zscore(C,10), Optimize("zs",1,0.6,1.6,0.2) )',
+  'MACT' => 'Cross( MA(C,lookback), C )',
+  'MOCT' => 'Cross( 0, LinRegSlope(ROC(C,lookback),lookback) )',
+  'CHCT' => 'C <= LLV( C, lookback )',
+  'ZSCT' => 'Cross( Optimize("zs",-1,-2,-0.6,0.2), zscore(C,10) )',
 }
 
 @afl = %Q{
@@ -178,6 +191,7 @@ strategies = {
 #include <z_score.afl>
 
 spread = RelStrength("SYMBOL");
+lookback = Optimize("lb",1,1,10,10);
 
 entry = ENTRY;
 
@@ -193,13 +207,17 @@ PositionScore = 1;
 
 WATCH_LIST = { '@FV#C' => 68, 'BL#C' => 67 }
 
-def afl_code(entry, spread)
-  afl_code = @afl.
-    gsub(/ENTRY/, entry).
-    gsub(/SYMBOL/, spread)
+def afl_code(entry, spread=nil)
+  afl_code = @afl.gsub /ENTRY/, entry
+  if spread
+    afl_code.gsub! /SYMBOL/, spread
+  else
+    afl_code.gsub! /^.*SYMBOL.*$/, ''
+  end
+  afl_code
 end
 
-def embedded_afl_code(entry, spread)
+def embedded_afl_code(entry, spread=nil)
   afl_code(entry, spread).
     gsub(/&/,'&amp;').
     gsub(/\</,'&lt;').
@@ -208,8 +226,9 @@ def embedded_afl_code(entry, spread)
     gsub(/\n/, '\r\n')
 end
 
-def afl_filename(spread, bond, entry='L', extension='.afl')
-  [ bond, spread, entry ].map {|_| _.gsub(/(\W|C$)/,'') }.join('_') + extension
+def afl_filename(code, spread, bond, entry='L', extension='.afl')
+  [ bond, code, spread, entry ].compact.
+    map {|_| _.gsub(/(\W|C$)/,'') }.join('_') + extension
 end
 
 def project_code(code, entry, spread, bond)
@@ -217,26 +236,61 @@ def project_code(code, entry, spread, bond)
   formula_content.gsub! "\\", "\\\\\\\\"
   
   @project.
-    gsub(/PROJECT_AFL/, afl_filename(spread,bond)).
+    gsub(/PROJECT_AFL/, afl_filename(code,spread,bond)).
     gsub(/\<WatchListID\>WATCHLIST<\/WatchListID>/,
       "<WatchListID>#{WATCH_LIST[bond]}</WatchListID>").
     gsub(/FORMULA_CONTENT/, formula_content).
     gsub /<FormulaPath>.*<\/FormulaPath>/,
-      "<FormulaPath>Formulas\\\\\\Signals\\\\\\#{afl_filename(spread,bond)}</FormulaPath>"
+      "<FormulaPath>Formulas\\\\\\Signals\\\\\\#{afl_filename(code,spread,bond)}</FormulaPath>"
 end
 
-def create_strategy(code, entry, spread, bond)
+def create_spread_strategy(code, entry, spread, bond)
   return if spread == bond
-  afl_file = afl_filename(spread,bond)
-  project_file = afl_filename(spread,bond, 'L', '.apx')
+  afl_file = afl_filename(code,spread,bond)
+  project_file = afl_filename(code,spread,bond, 'L', '.apx')
   File.open(afl_file,'w') {|_| _.puts afl_code(entry, spread) }
   File.open(project_file,'w') {|_| _.puts project_code(code, entry, spread, bond) }
 end
 
-strategies.each do |code, entry|
-  %w[ @FV#C BL#C @ES#C EX#C XG#C @DX#C @EU#C QCL#C QGC#C ].each do |spread|
-    %w[ @FV#C BL#C ].each do |bond|
-      create_strategy code, entry, spread, bond
-    end
+def create_strategy(code, entry, bond)
+  afl_file = afl_filename code, nil, bond
+  project_file = afl_filename code, nil, bond, 'L', '.apx'
+  File.open(afl_file,'w') {|_| _.puts afl_code entry }
+  File.open(project_file,'w') {|_| _.puts project_code(code, entry, nil, bond) }
+end
+
+spread_markets = %w[
+@DX#C
+@EU#C
+
+@ES#C
+@NKD#C
+EX#C
+XG#C
+CN#C
+
+@TU#C
+@FV#C
+@TY#C
+@US#C
+EZ#C
+BN#C
+BD#C
+LN#C
+
+QCL#C
+QGC#C
+QHG#C
+]
+
+spread_strategies.each do |code, entry|
+  spread_markets.each do |spread|
+    create_spread_strategy code, entry, spread, "BL#C"
+    create_spread_strategy code, entry, spread, "@TY#C"
   end
+end
+
+strategies.each do |code, entry|
+  create_strategy code, entry, "BL#C"
+  create_strategy code, entry, "@TY#C"
 end
