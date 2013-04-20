@@ -5,7 +5,7 @@ require 'statsample'
   map {|strategy, _| _ }.flatten
   
 lookback = 10
-xbar = 1.25
+xbar = 1.5
 
 # FIXME: 1st 10 trades may be below xbar, use extract trades instead
 trades_xbar = @total_trades.each_with_index.map do |t,i|
@@ -16,7 +16,8 @@ trades_xbar = @total_trades.each_with_index.map do |t,i|
 end.find_all {|_,xb| xb >= xbar }
 
 trades = trades_xbar.map &:first
-# trades.map! {|_| _ < -20 ? _.abs - 20 : _ }
+# trades.map! {|_| _ < -210 ? -210 : _ }
+# throw trades.sort.inspect
 
 losing_trades = trades.find_all {|_| _ < 0 }.to_scale
 MAX_LOSS = losing_trades.min.abs
@@ -38,30 +39,35 @@ def account_risk(trade_xbar=1.0)
 end
 
 def trade_risk(trade_xbar=1.0)
-  # 633
+  633
   # 371
-  776
+  # 776
+  # (776 + 633) / 2
+  # MAX_LOSS
+  # LOSS_PERCENTILE
 end
 
-fixed_return = trades.size.times.map do
+simulations = trades_per_year.times
+
+fixed_return = simulations.map do
   trades.shuffle[0..trades_per_year].flatten.reduce &:'+'
 end.to_scale
 
-fixed_drawdown = trades.size.times.map do
+fixed_drawdown = simulations.map do
   shuffled_trades = trades.shuffle[0..trades_per_year]
   shuffled_trades.each_with_index.map do |trade,index|
     ((trade - shuffled_trades[0..index].max) / shuffled_trades[0..index].max) / 100
   end.min
 end.to_scale
 
-consecutive_losses = trades.size.times.map do
+consecutive_losses = simulations.map do
   trades.shuffle.chunk {|_| _ < 0 }.to_a.
     map {|loss| loss.last.size if loss.first }.compact.max
 end.to_scale
 
 max_consecutive_losses = (consecutive_losses.mean * (consecutive_losses.sd * 1.65)).to_i
 
-tw = trades.size.times.map do
+tw = simulations.map do
   st = trades_xbar.shuffle[0..trades_per_year]
   balance = account
   st.each do |trade,trade_xbar|
@@ -71,7 +77,7 @@ tw = trades.size.times.map do
   balance - account
 end.to_scale
 
-dd = trades.size.times.map do
+dd = simulations.map do
   st = trades_xbar.shuffle[0..trades_per_year]
   balance = account
   compounded_trades = st.map do |trade,trade_xbar|

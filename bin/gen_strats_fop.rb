@@ -179,22 +179,20 @@ strategies = {
   'MA' => 'Cross( C, MA(C,lookback) )',
   'MO' => 'Cross( LinRegSlope(ROC(C,lookback),lookback), 0)',
   'CH' => 'C >= HHV( C, lookback )',
-  'ZS' => 'Cross( zscore(C,10), Optimize("zs",1,0.6,1.6,0.2) )',
+  'ZS' => 'Cross( zscore(C,lookback), Optimize("zs",1,0,2,0.1) )',
   'MACT' => 'Cross( MA(C,lookback), C )',
   'MOCT' => 'Cross( 0, LinRegSlope(ROC(C,lookback),lookback) )',
   'CHCT' => 'C <= LLV( C, lookback )',
-  'ZSCT' => 'Cross( Optimize("zs",-1,-2,-0.6,0.2), zscore(C,10) )',
+  'ZSCT' => 'Cross( zscore(C,lookback), Optimize("zs",1,-2,0,0.1) )',
 }
 
 @afl = %Q{
-#include <intraday_bond_spread.afl>
 #include <z_score.afl>
 
 spread = RelStrength("SYMBOL");
-vol_filter = abs(zscore(C,10)) <= Optimize("vf",1,-2,2,0.25);
 entry = ENTRY;
 
-Buy = liquid_hours && entry && vol_filter;
+Buy = entry;
 Short = Sell = Cover = False;
 
 // Optimisations from WFA
@@ -204,7 +202,16 @@ PositionScore = 1;
 #include <entry_signals.afl>
 }
 
-WATCH_LIST = { '@FV#C' => 68, 'BL#C' => 67, '@TY#C' => 69 }
+WATCH_LIST = { 
+  '@YM#C' => 68, 
+  'BL#C' => 67, 
+  '@TY#C' => 69, 
+  'EX#C' => 69,
+  '@DX#C' => 69,
+  '@BP#C' => 69,
+  '@CD#C' => 69,
+  '@AD#C' => 69,
+}
 
 def afl_code(entry, spread=nil)
   afl_code = @afl.gsub /ENTRY/, entry
@@ -261,12 +268,14 @@ end
 spread_markets = %w[
 @DX#C
 @EU#C
+@BP#C
 @JY#C
+@CD#C
+@AD#C
 
 @ES#C
 @NKD#C
 EX#C
-XG#C
 CN#C
 
 @TU#C
@@ -281,17 +290,14 @@ LG#C
 
 QCL#C
 QGC#C
-QHG#C
 ]
 
 spread_strategies.each do |code, entry|
   spread_markets.each do |spread|
-    create_spread_strategy code, entry, spread, "BL#C"
-    create_spread_strategy code, entry, spread, "@TY#C"
+    WATCH_LIST.keys.each {|_| create_spread_strategy code, entry, spread, _ }
   end
 end
 
 strategies.each do |code, entry|
-  create_strategy code, entry, "BL#C"
-  create_strategy code, entry, "@TY#C"
+  WATCH_LIST.keys.each {|_| create_spread_strategy code, entry, spread, _ }
 end

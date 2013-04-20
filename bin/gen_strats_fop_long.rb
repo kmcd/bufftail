@@ -179,32 +179,54 @@ strategies = {
   'MA' => 'Cross( C, MA(C,lookback) )',
   'MO' => 'Cross( LinRegSlope(ROC(C,lookback),lookback), 0)',
   'CH' => 'C >= HHV( C, lookback )',
-  'ZS' => 'Cross( zscore(C,10), Optimize("zs",1,0.6,1.6,0.2) )',
+  'ZS' => 'Cross( zscore(C,lookback), Optimize("zs",1,0,2,0.1) )',
   'MACT' => 'Cross( MA(C,lookback), C )',
   'MOCT' => 'Cross( 0, LinRegSlope(ROC(C,lookback),lookback) )',
   'CHCT' => 'C <= LLV( C, lookback )',
-  'ZSCT' => 'Cross( Optimize("zs",-1,-2,-0.6,0.2), zscore(C,10) )',
+  'ZSCT' => 'Cross( zscore(C,lookback), Optimize("zs",1,-2,0,0.1) )',
 }
 
 @afl = %Q{
-#include <intraday_bond_spread.afl>
 #include <z_score.afl>
 
-spread = RelStrength("SYMBOL");
-vol_filter = abs(zscore(C,10)) <= Optimize("vf",1,-2,2,0.25);
-entry = ENTRY;
+OptimizerSetEngine("cmae");
+SetOption("FuturesMode", True );
+SetBarsRequired(10000, 0);
+SetTradeDelays(0,0,0,0);
+BuyPrice = SellPrice = C;
+SetPositionSize(1, spsShares);
+RoundLotSize = 1;
 
-Buy = liquid_hours && entry && vol_filter;
+premium = MarginDeposit;
+pt = (premium/PointValue) * 3;
+lookback = Optimize("lb",2,2,10,1);
+zs = zscore(C, lookback);
+spread = RelStrength("SYMBOL");
+
+Buy = ENTRY;
 Short = Sell = Cover = False;
+
+ApplyStop(stopTypeProfit, stopModePoint, pt, 0);
+ApplyStop(stopTypeNBar, stopModeBars, 10-DayOfWeek(), 0);
 
 // Optimisations from WFA
 
 AddTextColumn("BUY", "Entry" );
+sl = 1;
 PositionScore = 1;
 #include <entry_signals.afl>
 }
 
-WATCH_LIST = { '@FV#C' => 68, 'BL#C' => 67, '@TY#C' => 69 }
+WATCH_LIST = {
+  '@YM#C' => 1,
+  'BL#C' => 2,
+  'EX#C' => 3,
+  '@DX#C' => 4,
+  '@BP#C' => 5,
+  '@CD#C' => 6,
+  '@AD#C' => 7,
+  '@TY#C' => 8
+}
 
 def afl_code(entry, spread=nil)
   afl_code = @afl.gsub /ENTRY/, entry
@@ -261,13 +283,15 @@ end
 spread_markets = %w[
 @DX#C
 @EU#C
+@BP#C
 @JY#C
+@CD#C
+@AD#C
 
 @ES#C
 @NKD#C
 EX#C
-XG#C
-CN#C
+@VX#C
 
 @TU#C
 @FV#C
@@ -279,19 +303,21 @@ LN#C
 CO#C
 LG#C
 
+IE#C
+@ED#C
+LL#C
+LS#C
+
 QCL#C
 QGC#C
-QHG#C
 ]
 
 spread_strategies.each do |code, entry|
   spread_markets.each do |spread|
-    create_spread_strategy code, entry, spread, "BL#C"
-    create_spread_strategy code, entry, spread, "@TY#C"
+    WATCH_LIST.keys.each {|_| create_spread_strategy code, entry, spread, _ }
   end
 end
 
 strategies.each do |code, entry|
-  create_strategy code, entry, "BL#C"
-  create_strategy code, entry, "@TY#C"
+  WATCH_LIST.keys.each {|_| create_strategy code, entry, _ }
 end
