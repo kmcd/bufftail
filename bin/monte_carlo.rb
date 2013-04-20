@@ -33,7 +33,7 @@ trades = trades_xbar.map &:first
 losing_trades = trades.find_all {|_| _ < 0 }.to_scale
 MAX_LOSS = losing_trades.min.abs
 LOSS_PERCENTILE = losing_trades.mean.abs+(losing_trades.sd*3)
-quarter_trading_days = 6*11
+quarter_trading_days = 6*1
 trades_per_year = trades.size < quarter_trading_days ? trades.size : quarter_trading_days
 account = 10_000
 
@@ -50,12 +50,10 @@ def trade_risk(trade_xbar=1.0)
 end
 
 def account_risk(trade_xbar=1.0)
-  # 0.075
-  # (trade_risk / 10_000.0) * 2.275
-  0.1
+  0.075
 end
 
-simulations = 1000.times #trades_per_year.times
+simulations = 1000.times
 
 fixed_return = simulations.map do
   trades.shuffle[0..trades_per_year].flatten.reduce &:'+'
