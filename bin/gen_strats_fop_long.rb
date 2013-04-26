@@ -8,8 +8,8 @@ FORMULA_CONTENT
 <ApplyTo>2</ApplyTo>
 <RangeType>1</RangeType>
 <RangeAmount>1</RangeAmount>
-<FromDate>1/1/2011 00:00:00</FromDate>
-<ToDate>1/1/2012</ToDate>
+<FromDate>1/1/2012 00:00:00</FromDate>
+<ToDate>1/1/2013</ToDate>
 <SyncOnSelect>0</SyncOnSelect>
 <RunEvery>0</RunEvery>
 <RunEveryInterval>5min</RunEveryInterval>
@@ -166,24 +166,17 @@ FORMULA_CONTENT
 </AmiBroker-Analysis>
 '
 
-spread_strategies = {
+SPREAD_STRATEGIES = {
   'MA' => 'Cross( spread, MA(spread,lookback) )',
-  'MO' => 'Cross( LinRegSlope(ROC(spread,lookback),lookback), 0)',
   'CH' => 'spread >= HHV( spread, lookback )',
   'MACT' => 'Cross( MA(spread,lookback), spread )',
-  'MOCT' => 'Cross( 0, LinRegSlope(ROC(spread,lookback),lookback) )',
-  'CHCT' => 'spread <= LLV( spread, lookback )'
+  'CHCT' => 'spread <= LLV( spread, lookback )',
 }
 
 strategies = {
   'MA' => 'Cross( C, MA(C,lookback) )',
-  'MO' => 'Cross( LinRegSlope(ROC(C,lookback),lookback), 0)',
-  'CH' => 'C >= HHV( C, lookback )',
-  'ZS' => 'Cross( zscore(C,lookback), Optimize("zs",1,0,2,0.1) )',
-  'MACT' => 'Cross( MA(C,lookback), C )',
-  'MOCT' => 'Cross( 0, LinRegSlope(ROC(C,lookback),lookback) )',
-  'CHCT' => 'C <= LLV( C, lookback )',
-  'ZSCT' => 'Cross( zscore(C,lookback), Optimize("zs",1,-2,0,0.1) )',
+  'ZS' => 'Cross( zscore(C,10), Optimize("zs",1,0,3,0.1) )',
+  'ZSCT' => 'Cross( zscore(C,10), Optimize("zs",1,-3,0,0.1) )',
 }
 
 @afl = %Q{
@@ -198,16 +191,15 @@ SetPositionSize(1, spsShares);
 RoundLotSize = 1;
 
 premium = MarginDeposit;
-pt = (premium/PointValue) * 3;
-lookback = Optimize("lb",2,2,10,1);
-zs = zscore(C, lookback);
+pt = (premium/PointValue) * Optimize("pt",2,1.75,2.5,0.25);
 spread = RelStrength("SYMBOL");
+lookback = Optimize("lb",2,2,10,2);
 
 Buy = ENTRY;
 Short = Sell = Cover = False;
 
 ApplyStop(stopTypeProfit, stopModePoint, pt, 0);
-ApplyStop(stopTypeNBar, stopModeBars, 10-DayOfWeek(), 0);
+ApplyStop(stopTypeNBar, stopModeBars, 3, 0);
 
 // Optimisations from WFA
 
@@ -218,14 +210,19 @@ PositionScore = 1;
 }
 
 WATCH_LIST = {
-  '@YM#C' => 1,
-  'BL#C' => 2,
-  'EX#C' => 3,
+  '@ES#C' => 1,
+  'BD#C' => 2,
+  '@AD#C' => 3,
   '@DX#C' => 4,
   '@BP#C' => 5,
   '@CD#C' => 6,
-  '@AD#C' => 7,
-  '@TY#C' => 8
+  '@S#C' => 7,
+  '@TY#C' => 8,
+  '@SM#C' => 9,
+  '@BO#C' => 10,
+  '@W#C' => 11,
+  '@C#C' => 12,
+  '@NQ#C' => 13
 }
 
 def afl_code(entry, spread=nil)
@@ -280,44 +277,28 @@ def create_strategy(code, entry, bond)
   File.open(project_file,'w') {|_| _.puts project_code(code, entry, nil, bond) }
 end
 
-spread_markets = %w[
-@DX#C
-@EU#C
-@BP#C
-@JY#C
-@CD#C
-@AD#C
-
-@ES#C
-@NKD#C
-EX#C
-@VX#C
-
-@TU#C
-@FV#C
-@TY#C
-@US#C
-EZ#C
-BD#C
-LN#C
-CO#C
-LG#C
-
-IE#C
-@ED#C
-LL#C
-LS#C
-
-QCL#C
-QGC#C
-]
-
-spread_strategies.each do |code, entry|
-  spread_markets.each do |spread|
-    WATCH_LIST.keys.each {|_| create_spread_strategy code, entry, spread, _ }
+def spread_strats(contract,markets)
+  markets.each do |spread|
+    SPREAD_STRATEGIES.each do |code, entry|
+      create_spread_strategy code, entry, spread, contract
+    end
   end
 end
 
+spread_strats "@ES#C", %w[ @VX#C LN#C @TY#C QGC#C ]
+spread_strats "@NQ#C", %w[ @ES#C @VX#C LN#C @TY#C QGC#C ]
+
+spread_strats "@TY#C", %w[ @FV#C LN#C @ES#C @VX#C ]
+spread_strats "BD#C", %w[ @TY#C BL#C LN#C LG#C @ES#C EX#C @DX#C @EU#C @VX#C ]
+
+spread_strats "@S#C", %w[ @SM#C @BO#C @W#C @C#C ]
+spread_strats "@SM#C", %w[ @S#C @BO#C @W#C @C#C ]
+spread_strats "@BO#C", %w[ @SM#C @S#C @W#C @C#C ]
+spread_strats "@W#C", %w[ @SM#C @BO#C @S#C @C#C ]
+spread_strats "@C#C", %w[ @SM#C @BO#C @W#C @S#C ]
+
+tradeable_contracts = %w[ @ES#C @NQ#C @TY#C BD#C @S#C @SM#C @BO#C @W#C @C#C ]
+
 strategies.each do |code, entry|
-  WATCH_LIST.keys.each {|_| create_strategy code, entry, _ }
+  tradeable_contracts.each {|_| create_strategy code, entry, _ }
 end
