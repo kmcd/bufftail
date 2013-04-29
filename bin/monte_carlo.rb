@@ -2,7 +2,8 @@ require 'yaml'
 require 'statsample'
 
 LOOKBACK = 10
-XBAR = 0.25
+XBAR = 0.5
+ACCURACY = 0.0
 
 def account
   10_000
@@ -22,7 +23,7 @@ end
 
 def premium(premium_paid, trade, profit_target=2)
   closed_trade = trade - premium_paid      
-  return -premium_paid if closed_trade < -premium_paid
+  return -premium_paid if closed_trade < 0
   closed_trade
 end
 
@@ -32,9 +33,10 @@ def closed_fop_trade(strategy,trade)
     when /BD/ ; premium 250, trade
     when /TY/ ; premium 450, trade
 
-    when /ES/ ; premium 500, trade
+    when /ES/ ; 1#premium 500, trade
     when /YM/ ; premium 400, trade
     when /EX/ ; premium 400, trade
+    when /NQ/ ; premium 300, trade
                            
     when /DX/ ; premium 350, trade
     when /BP/ ; premium 300, trade
@@ -58,13 +60,19 @@ def trades_xbar(strategy)
     closed_fop_trade strategy, trade
   end.flatten.reject {|_| _ == 1 }.compact
   
-  # FIXME: 1st 10 trades may be below XBAR
   total_trades.each_with_index.map do |t,i|
     roll = i < LOOKBACK ? i : LOOKBACK
     sample = total_trades[i-roll...i].to_scale
+    accuracy = sample.count {|_| _ > 0 } / sample.size.to_f
     trade_xbar = sample.mean/sample.sd
+    roi = sample.partition {|_| _ > 0 }.
+      map {|_| _.reduce(&:'+') || 1 }.
+      map(&:abs).
+      reduce &:'/'
+    next unless roi >= 1.5
+    
     [t,trade_xbar]
-  end.find_all {|_,xb| xb >= XBAR && _ }
+  end.compact
 end
 
 def accuracy(trades)
@@ -72,8 +80,8 @@ def accuracy(trades)
 end 
 
 def number_of_trades(trades)
-  trading_days = 20 * 3 * 4
-  average_trades = ((trades.size / 252.0) * trading_days).round
+  trading_days = 20 * 3 * 1
+  average_trades = ((trades.size / (252.0 * 2) ) * trading_days).round
   return trades.size if average_trades > trades.size
   average_trades
 end
@@ -84,7 +92,7 @@ end
 
 def fixed_return(trades, strategy)
   simulations.map do
-    trades.map {|_| _ * contracts(strategy) }.
+      trades.map {|_| _ * contracts(strategy) }.
       shuffle[0..number_of_trades(trades)].flatten.reduce(&:'+')
   end.to_scale
 end
@@ -125,26 +133,8 @@ def dd(trades,strategy)
   end.flatten.to_scale
 end
 
-def tabular_report_header
-  [ "Strategy",
-    "Trades",
-    # "Xbar 25",
-    "Accuracy",
-    # "Losses",
-    "TW50",
-    "DD95",
-    "TW50/DD95"
-    # "95% TW return",
-    # "95% DD drawdown",
-    # "95% TW/DD",
-    # "50% TW return",
-    # "50% DD drawdown",
-    # "50% TW/DD" 
-  ]
-end
-
 SPACING = 15
-CONFIDENCE = 0
+CONFIDENCE = 0.0
 
 def report(description="",message="")
   print message.to_s.ljust(SPACING)
@@ -152,10 +142,13 @@ end
 
 trades_data.keys.each do |strategy|
   trades = trades_xbar(strategy).map &:first
+  next if trades.empty? || number_of_trades(trades) < 1
+  next if strategy =~ /_S$/
+  
   ftw = fixed_return trades, strategy
   fdd = fixed_drawdown trades, strategy
-  one_lot_return_50 = ( ftw.mean - ( ftw.sd * CONFIDENCE ) ) / account
-  one_lot_drawdown_95 = ( fdd.mean.abs + fdd.sd * CONFIDENCE)  / account
+  one_lot_drawdown_95 = (fdd.mean.abs + fdd.sd * CONFIDENCE)
+  one_lot_return_50 = ( ftw.mean - ( ftw.sd * CONFIDENCE ) )
   
   report "Strategy",        strategy
   report "Trades ",         number_of_trades(trades)

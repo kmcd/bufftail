@@ -4,8 +4,8 @@ require 'YAML'
 require 'active_support/all'
 
 today = Time.now.to_s.gsub(/\D/, '')[0...8]
-# `rm -Rf ./tmp/*ample*`
-# `scp -Cr 'kmcd@10.211.55.3:/cygdrive/c/Program*/Amibroker/Reports/*Out-of-Sample*#{today}*' tmp`
+`rm -Rf ./tmp/*ample*`
+`scp -Cr 'kmcd@10.211.55.3:/cygdrive/c/Program*/Amibroker/Reports/*Out-of-Sample*#{today}*' tmp`
 todays_reports =  `ls -tr ./tmp/*ample*/trades.html | grep '#{today}'`
 
 REPORT_REGEX = /[A-Z]+_[A-Z]+_[A-Z]*(_[A-Z])*/
