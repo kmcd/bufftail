@@ -177,7 +177,7 @@ strategies = {
   # 'ZSCT' => 'Cross( Optimize("zs",0,0,3,0.1), zscore(C,10) )',
   # 'RSI' => 'Cross( Optimize("rsi",50,50,90,2), RSIa(H,lookback) ) ',
   # 'RSI' => 'Cross( Optimize("rsi",50,50,90,2), RSIa(H,lookback) ) ',
-  'CH' =>  'C <= LLV(C,lookback)',
+  'CH' =>  'C <= LLV(C,lookback) && Sum(C <= LLV(C,lookback),lookback) <= 1',
 }
 
 @afl = %Q{

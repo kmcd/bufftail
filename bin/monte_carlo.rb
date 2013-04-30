@@ -4,13 +4,14 @@ require 'statsample'
 LOOKBACK = 10
 XBAR = 0.5
 ACCURACY = 0.0
+POSITION_SIZE = 0.075
 
 def account
   10_000
 end
    
 def simulations
-  99.times
+  299.times
 end
 
 def trade_risk(strategy)
@@ -18,7 +19,7 @@ def trade_risk(strategy)
 end
 
 def account_risk
-  account * 0.05
+  account * POSITION_SIZE
 end
 
 def premium(premium_paid, trade, profit_target=2)
@@ -34,20 +35,20 @@ def closed_fop_trade(strategy,trade)
     when /TY/ ; premium 450, trade
 
     when /ES/ ; 1#premium 500, trade
-    when /YM/ ; premium 400, trade
-    when /EX/ ; premium 400, trade
+    when /YM/ ; 1#premium 400, trade
+    when /EX/ ; 1#premium 400, trade
     when /NQ/ ; premium 300, trade
-                           
-    when /DX/ ; premium 350, trade
-    when /BP/ ; premium 300, trade
-    when /AD/ ; premium 400, trade
-    when /CD/ ; premium 400, trade
 
-    when /S/ ;  premium 450, trade
-    when /BO/ ; premium 250, trade
-    when /SM/ ; premium 350, trade
-    when /W/ ;  premium 375, trade
-    when /C/ ;  premium 310, trade
+    when /DX/ ; 1#premium 350, trade
+    when /BP/ ; 1#premium 300, trade
+    when /AD/ ; 1#premium 400, trade
+    when /CD/ ; 1#premium 400, trade
+
+    when /S/ ;  1#premium 450, trade
+    when /BO/ ; 1#premium 250, trade
+    when /SM/ ; 1#premium 350, trade
+    when /W/ ;  1#premium 375, trade
+    when /C/ ;  1#premium 310, trade
   end
 end
 
@@ -69,7 +70,7 @@ def trades_xbar(strategy)
       map {|_| _.reduce(&:'+') || 1 }.
       map(&:abs).
       reduce &:'/'
-    next unless roi >= 1.5
+    next unless roi >= 1.0
     
     [t,trade_xbar]
   end.compact
@@ -92,8 +93,8 @@ end
 
 def fixed_return(trades, strategy)
   simulations.map do
-      trades.map {|_| _ * contracts(strategy) }.
-      shuffle[0..number_of_trades(trades)].flatten.reduce(&:'+')
+    trades.map {|_| _ * contracts(strategy) }.
+    shuffle[0..number_of_trades(trades)].flatten.reduce(&:'+')
   end.to_scale
 end
 
@@ -112,9 +113,9 @@ def tw(trades,strategy)
     st = trades_xbar(strategy).shuffle[0..number_of_trades(trades)]
     balance = account
     compounded_trades = st.map do |trade,trade_xbar|
-      contracts = ((balance * account_risk(strategy)) /
-        trade_risk(strategy)).round
+      contracts = (balance * POSITION_SIZE / trade_risk(strategy)).round
       balance += (trade * contracts)
+      balance - account
     end
   end.flatten.to_scale
 end
@@ -124,8 +125,9 @@ def dd(trades,strategy)
     st = trades_xbar(strategy).shuffle[0..number_of_trades(trades)]
     balance = account
     compounded_trades = st.map do |trade,trade_xbar|
-      contracts = ((balance * account_risk(strategy)) / trade_risk(strategy)).round
+      contracts = ((balance * POSITION_SIZE) / trade_risk(strategy)).round
       balance += (trade * contracts)
+      balance - account
     end
     compounded_trades.each_with_index.map do |trade,i| 
       (trade - compounded_trades[0..i].max) / compounded_trades[0..i].max
@@ -140,6 +142,8 @@ def report(description="",message="")
   print message.to_s.ljust(SPACING)
 end
 
+@totals = []
+
 trades_data.keys.each do |strategy|
   trades = trades_xbar(strategy).map &:first
   next if trades.empty? || number_of_trades(trades) < 1
@@ -147,14 +151,34 @@ trades_data.keys.each do |strategy|
   
   ftw = fixed_return trades, strategy
   fdd = fixed_drawdown trades, strategy
-  one_lot_drawdown_95 = (fdd.mean.abs + fdd.sd * CONFIDENCE)
+  one_lot_drawdown_95 = (fdd.mean.abs + (fdd.sd * CONFIDENCE))
   one_lot_return_50 = ( ftw.mean - ( ftw.sd * CONFIDENCE ) )
+  
+  @totals << [number_of_trades(trades), (accuracy(trades) * 100), 
+    one_lot_return_50, one_lot_drawdown_95, 
+    (one_lot_return_50 / one_lot_drawdown_95 ) ]
   
   report "Strategy",        strategy
   report "Trades ",         number_of_trades(trades)
   report "Accuracy",        (accuracy(trades) * 100).round(2)
-  report "1 lot TW50",      one_lot_return_50.round(3)
-  report "1 lot DD95",      one_lot_drawdown_95.round(3)
-  report "1 lot TW50/DD95", (one_lot_return_50 / one_lot_drawdown_95 ).round(3)
+  report "1 lot TW50",      one_lot_return_50.round(2)
+  report "1 lot DD95",      one_lot_drawdown_95.round(2)
+  report "1 lot TW50/DD95", (one_lot_return_50 / one_lot_drawdown_95 ).round(2)
   puts
 end
+
+def total_column(number)
+  @totals.map {|_| _[number] }.reduce &:'+'
+end
+
+def average_column(number)
+  total_column(number) / @totals.size
+end
+
+report "Strategy",        "TOTAL"
+report "Trades ",         total_column(0).to_i
+report "Accuracy",        average_column(1).round(2)
+report "1 lot TW50",      total_column(2).round(2)
+report "1 lot DD95",      average_column(3).round(2)
+report "1 lot TW50/DD95", average_column(4).round(2)
+puts
