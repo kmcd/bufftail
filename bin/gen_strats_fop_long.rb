@@ -174,11 +174,8 @@ SPREAD_STRATEGIES = {
 }
 
 strategies = {
-  # 'ZSM' => 'Cross( zscore(C,10), Optimize("zs",0,-1,1,0.1) )',
-  # 'ZS' => 'Cross( zscore(C,10), Optimize("zs",1,1,3,0.1) )',
-  # 'ZSCT' => 'Cross( zscore(C,10), Optimize("zs",1,-3,-1,0.1) )',
-  # 'ZSCT' => 'Cross( zscore(C,10), Optimize("zs",1,-3,-1,0.1) )',
-  'RSI' => 'Cross(RSIa(L,lookback), Optimize("rsi",10,10,50,2) )',
+  'RSI' => 'Cross(RSIa(C,lookback), Optimize("rsi",2,2,40,2) )',
+  'VIX_RSI' => 'Cross( RSIa(Foreign("@VX#C"),lookback), Optimize("vix rsi",90,90,50,2) )',
   'CH' =>  'C >= HHV(C,lookback) && Sum(C >= HHV(C,lookback),lookback) <= 1'
 }
 
@@ -202,7 +199,7 @@ Buy = ENTRY;
 Short = Sell = Cover = False;
 
 ApplyStop(stopTypeProfit, stopModePoint, pt, 0);
-ApplyStop(stopTypeNBar, stopModeBars, 10-DayOfWeek(), 0);
+ApplyStop(stopTypeNBar, stopModeBars, 15-DayOfWeek(), 0);
 
 // Optimisations from WFA
 
@@ -225,7 +222,14 @@ WATCH_LIST = {
   '@BO#C' => 10,
   '@W#C' => 11,
   '@C#C' => 12,
-  '@NQ#C' => 13
+  '@NQ#C' => 13,
+  '@ED#C' => 14,
+  'IE#C' => 15,
+  'LL#C' => 16,
+  '@NQ#C' => 13,
+  '@FV#C' => 18,
+  '@EMD#C' => 19,
+  '@YM#C' => 20
 }
 
 def afl_code(entry, spread=nil)
@@ -288,24 +292,18 @@ def spread_strats(contract,markets)
   end
 end
 
-# spread_strats "@ES#C", %w[ @VX#C @TY#C EX#C @DX#C ]
-# spread_strats "@NQ#C", %w[ @ES#C @VX#C @TY#C ]
-# spread_strats "@TY#C", %w[ @FV#C LN#C LG#C BD#C @ES#C @DX#C ]
-# spread_strats "BD#C", %w[ @TY#C BL#C LN#C LG#C @ES#C EX#C @EU#C ]
-# spread_strats "@BP#C", %w[ LG#C @DX#C @CD#C ]
-# spread_strats "@CD#C", %w[ @BP#C @DX#C QCL#C ]
-# spread_strats "@AD#C", %w[ @BP#C @DX#C QGC#C ]
-# spread_strats "@S#C", %w[ @SM#C @BO#C @W#C @C#C ]
-# spread_strats "@SM#C", %w[ @S#C @BO#C @W#C @C#C ]
-# spread_strats "@BO#C", %w[ @SM#C @S#C @W#C @C#C ]
-# spread_strats "@W#C", %w[ @SM#C @BO#C @S#C @C#C ]
-# spread_strats "@C#C", %w[ @SM#C @BO#C @W#C @S#C ]
-
 tradeable_contracts = %w[
-  @NQ#C 
-  @TY#C BD#C 
-  @BP#C @CD#C @AD#C
-  @S#C @SM#C @BO#C @W#C @C#C
+  @FV#C
+  @ES#C
+  @EMD#C
+  @YM#C
+  @NQ#C
+  @AD#C
+  @BP#C
+  @CD#C
+  @S#C
+  @C#C
+  @DX#C
 ]
 
 strategies.each do |code, entry|

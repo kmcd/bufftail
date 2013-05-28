@@ -30,21 +30,25 @@ end
 
 def closed_fop_trade(strategy,trade)
   case strategy
-    when /BL/ ; premium 180, trade
-    when /BD/ ; premium 250, trade
+    when /BL/ ; 1#premium 250, trade
+    when /BD/ ; premium 500, trade
     when /TY/ ; premium 450, trade
 
-    when /ES/ ; 1#premium 500, trade
-    when /YM/ ; 1#premium 400, trade
-    when /EX/ ; 1#premium 400, trade
-    when /NQ/ ; premium 300, trade
+    when /ES/ ; premium 500, trade
+    when /YM/ ; 1#premium 500, trade
+    when /EX/ ; 1#premium 500, trade
+    when /NQ/ ; 1#premium 500, trade
+      
+    when /ED/ ; 1#premium 25, trade
+    when /LL/ ; 1#premium 30, trade
+    when /IE/ ; 1#premium 30, trade
 
     when /DX/ ; 1#premium 350, trade
     when /BP/ ; 1#premium 300, trade
     when /AD/ ; 1#premium 400, trade
     when /CD/ ; 1#premium 400, trade
 
-    when /S/ ;  1#premium 450, trade
+    when /S/ ;  premium 450, trade
     when /BO/ ; 1#premium 250, trade
     when /SM/ ; 1#premium 350, trade
     when /W/ ;  1#premium 375, trade
@@ -70,7 +74,7 @@ def trades_xbar(strategy)
       map {|_| _.reduce(&:'+') || 1 }.
       map(&:abs).
       reduce &:'/'
-    next unless roi >= 1.0
+    # next unless roi >= 1.0
     
     [t,trade_xbar]
   end.compact

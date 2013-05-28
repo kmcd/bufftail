@@ -174,9 +174,8 @@ SPREAD_STRATEGIES = {
 }
 
 strategies = {
-  # 'ZSCT' => 'Cross( Optimize("zs",0,0,3,0.1), zscore(C,10) )',
-  # 'RSI' => 'Cross( Optimize("rsi",50,50,90,2), RSIa(H,lookback) ) ',
-  # 'RSI' => 'Cross( Optimize("rsi",50,50,90,2), RSIa(H,lookback) ) ',
+  'VIX_RSI' => 'Cross( Optimize("vix rsi",90,90,50,2), RSIa(Foreign("@VX#C"),lookback), )',
+  'RSI' => 'Cross( Optimize("rsi",50,50,90,2), RSIa(C,lookback) ) ',
   'CH' =>  'C <= LLV(C,lookback) && Sum(C <= LLV(C,lookback),lookback) <= 1',
 }
 
@@ -192,7 +191,7 @@ SetPositionSize(1, spsShares);
 RoundLotSize = 1;
 
 premium = MarginDeposit;
-pt = (premium/PointValue) * Optimize("pt",2,1.75,2.5,0.25);
+pt = (premium/PointValue) * Optimize("pt",2,1.25,2.5,0.25);
 spread = RelStrength("SYMBOL");
 lookback = Optimize("lb",10,2,10,1);
 
@@ -224,6 +223,9 @@ WATCH_LIST = {
   '@W#C' => 11,
   '@C#C' => 12,
   '@NQ#C' => 13,
+  '@FV#C' => 18,
+  '@EMD#C' => 19,
+  '@YM#C' => 20
 }
 
 def afl_code(entry, spread=nil)
@@ -286,24 +288,18 @@ def spread_strats(contract,markets)
   end
 end
 
-# spread_strats "@ES#C", %w[ @VX#C @TY#C EX#C @DX#C ]
-# spread_strats "@NQ#C", %w[ @VX#C @TY#C EX#C @DX#C ]
-# spread_strats "@TY#C", %w[ @FV#C LN#C LG#C BD#C @ES#C @DX#C ]
-# spread_strats "BD#C", %w[ @TY#C BL#C LN#C LG#C @ES#C EX#C @EU#C ]
-# spread_strats "@BP#C", %w[ LG#C @DX#C @CD#C ]
-# spread_strats "@CD#C", %w[ @BP#C @DX#C QCL#C ]
-# spread_strats "@AD#C", %w[ @BP#C @DX#C QGC#C ]
-# spread_strats "@S#C", %w[ @SM#C @BO#C @W#C @C#C ]
-# spread_strats "@SM#C", %w[ @S#C @BO#C @W#C @C#C ]
-# spread_strats "@BO#C", %w[ @SM#C @S#C @W#C @C#C ]
-# spread_strats "@W#C", %w[ @SM#C @BO#C @S#C @C#C ]
-# spread_strats "@C#C", %w[ @SM#C @BO#C @W#C @S#C ]
-
-tradeable_contracts = %w[ 
-  @ES#C @NQ#C 
-  @TY#C BD#C 
-  @BP#C @CD#C @AD#C 
-  @S#C @SM#C @BO#C @W#C @C#C 
+tradeable_contracts = %w[
+  @FV#C
+  @ES#C
+  @EMD#C
+  @YM#C
+  @NQ#C
+  @AD#C
+  @BP#C
+  @CD#C
+  @S#C
+  @C#C
+  @DX#C
 ]
 
 strategies.each do |code, entry|
