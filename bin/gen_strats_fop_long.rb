@@ -175,7 +175,7 @@ SPREAD_STRATEGIES = {
 
 strategies = {
   'RSI' => 'Cross(RSIa(C,lookback), Optimize("rsi",2,2,40,2) )',
-  'VIX_RSI' => 'Cross( RSIa(Foreign("@VX#C"),lookback), Optimize("vix rsi",90,90,50,2) )',
+  'VIX_RSI' => 'Cross( RSIa(Foreign("@VX#C", "C"),lookback), Optimize("vix rsi",90,90,50,2) )',
   'CH' =>  'C >= HHV(C,lookback) && Sum(C >= HHV(C,lookback),lookback) <= 1'
 }
 
@@ -229,7 +229,8 @@ WATCH_LIST = {
   '@NQ#C' => 13,
   '@FV#C' => 18,
   '@EMD#C' => 19,
-  '@YM#C' => 20
+  '@YM#C' => 20,
+  '@TU#C' => 21
 }
 
 def afl_code(entry, spread=nil)
@@ -293,17 +294,12 @@ def spread_strats(contract,markets)
 end
 
 tradeable_contracts = %w[
-  @FV#C
+  @TU#C
   @ES#C
-  @EMD#C
-  @YM#C
-  @NQ#C
   @AD#C
   @BP#C
   @CD#C
-  @S#C
-  @C#C
-  @DX#C
+  @SF#C
 ]
 
 strategies.each do |code, entry|

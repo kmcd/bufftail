@@ -174,7 +174,7 @@ SPREAD_STRATEGIES = {
 }
 
 strategies = {
-  'VIX_RSI' => 'Cross( Optimize("vix rsi",90,90,50,2), RSIa(Foreign("@VX#C"),lookback), )',
+  'VIX_RSI' => 'Cross( Optimize("vix rsi",90,90,50,2), RSIa(Foreign("@VX#C", "C"),lookback), )',
   'RSI' => 'Cross( Optimize("rsi",50,50,90,2), RSIa(C,lookback) ) ',
   'CH' =>  'C <= LLV(C,lookback) && Sum(C <= LLV(C,lookback),lookback) <= 1',
 }

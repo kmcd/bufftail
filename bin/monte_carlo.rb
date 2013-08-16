@@ -30,29 +30,12 @@ end
 
 def closed_fop_trade(strategy,trade)
   case strategy
-    when /BL/ ; 1#premium 250, trade
-    when /BD/ ; premium 500, trade
-    when /TY/ ; premium 450, trade
-
-    when /ES/ ; premium 500, trade
-    when /YM/ ; 1#premium 500, trade
-    when /EX/ ; 1#premium 500, trade
-    when /NQ/ ; 1#premium 500, trade
-      
-    when /ED/ ; 1#premium 25, trade
-    when /LL/ ; 1#premium 30, trade
-    when /IE/ ; 1#premium 30, trade
-
-    when /DX/ ; 1#premium 350, trade
-    when /BP/ ; 1#premium 300, trade
-    when /AD/ ; 1#premium 400, trade
-    when /CD/ ; 1#premium 400, trade
-
-    when /S/ ;  premium 450, trade
-    when /BO/ ; 1#premium 250, trade
-    when /SM/ ; 1#premium 350, trade
-    when /W/ ;  1#premium 375, trade
-    when /C/ ;  1#premium 310, trade
+    when /^SP500/ ; premium 900, trade
+    when /^VIX/   ; premium 200, trade
+    when /FYT/    ; premium 500, trade
+    when /CHF/    ; premium 700, trade
+    when /GBP/    ; premium 700, trade
+    when /AUD/    ; premium 800, trade
   end
 end
 
@@ -139,7 +122,7 @@ def dd(trades,strategy)
   end.flatten.to_scale
 end
 
-SPACING = 15
+SPACING = 25
 CONFIDENCE = 0.0
 
 def report(description="",message="")
@@ -151,7 +134,6 @@ end
 trades_data.keys.each do |strategy|
   trades = trades_xbar(strategy).map &:first
   next if trades.empty? || number_of_trades(trades) < 1
-  next if strategy =~ /_S$/
   
   ftw = fixed_return trades, strategy
   fdd = fixed_drawdown trades, strategy
